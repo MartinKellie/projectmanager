@@ -1,0 +1,15 @@
+---
+description: Keep files small and modular; split by responsibility
+alwaysApply: true
+---
+
+# Modularity and file size
+
+- **Target**: No file should exceed **~200 lines** of substantive code (excluding imports, blank lines, and single-line type/constant blocks). If a file is approaching or over that, split it.
+- **One job per file**: Each module should have a single, clear responsibility. Extract helpers, subcomponents, and types into separate files.
+- **Split by layer**:
+  - **Components**: Extract subcomponents, hooks, and local types into sibling files (e.g. `today-focus.tsx` + `today-focus-hooks.ts`, `today-focus-types.ts`, or a `today-focus/` folder with `index.tsx`, `subcomponents.tsx`, `hooks.ts`).
+  - **Services**: One domain per file; shared helpers go in `lib/` or a shared service util.
+  - **Lib**: Keep each util or adapter focused (e.g. one file for Firestore helpers, one for auth helpers).
+- **Barrel files**: Use small `index.ts` barrels only to re-export from a folder; do not put real logic in barrels.
+- **New code**: When adding features, prefer new small modules over appending to large files. Refactor existing large files when you touch them.
