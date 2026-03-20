@@ -1,13 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { GlassPanel } from '@/components/layout/glass-panel'
 import { Button } from '@/components/ui/button'
 import { X, Building2, User, FolderKanban } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { ProjectTemplateSelector } from './project-template-selector'
+import { BusinessCreateForm, ContactCreateForm } from './business-contact-forms'
+import { ProjectCreateForm } from './project-create-form'
 import { useAuthContext } from '@/contexts/auth-context'
 import { cloneProject } from '@/services/projects'
+import { triggerAppDataRefresh } from '@/lib/events/data-refresh'
+import { triggerAppToast } from '@/lib/events/toast'
 import type { Project } from '@/types/database'
 
 interface OnboardingModalProps {
@@ -17,9 +21,10 @@ interface OnboardingModalProps {
   onContactCreate: () => void
   onProjectCreate: () => void
   onProjectCreated?: (projectId: string) => void
+  initialStep?: OnboardingStep
 }
 
-type OnboardingStep = 'select' | 'business' | 'contact' | 'project' | 'project-template'
+export type OnboardingStep = 'select' | 'business' | 'contact' | 'project' | 'project-template'
 
 export function OnboardingModal({
   isOpen,
@@ -28,9 +33,15 @@ export function OnboardingModal({
   onContactCreate,
   onProjectCreate,
   onProjectCreated,
+  initialStep = 'select',
 }: OnboardingModalProps) {
   const [step, setStep] = useState<OnboardingStep>('select')
   const { user } = useAuthContext()
+
+  useEffect(() => {
+    if (!isOpen) return
+    setStep(initialStep)
+  }, [isOpen, initialStep])
 
   if (!isOpen) return null
 
@@ -70,6 +81,8 @@ export function OnboardingModal({
       })
 
       if (result.success && result.data) {
+        triggerAppDataRefresh()
+        triggerAppToast({ message: 'Project created' })
         onProjectCreated?.(result.data)
         onClose()
         setStep('select')
@@ -87,6 +100,14 @@ export function OnboardingModal({
     setStep('select')
   }
 
+  const titleByStep: Record<OnboardingStep, string> = {
+    select: 'Add New',
+    business: 'Add Business',
+    contact: 'Add Contact',
+    project: 'Add Project',
+    'project-template': 'Add Project',
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <GlassPanel
@@ -101,7 +122,7 @@ export function OnboardingModal({
           <X size={20} />
         </button>
 
-        <h2 className="text-2xl font-semibold mb-6">Add New</h2>
+        <h2 className="text-2xl font-semibold mb-6">{titleByStep[step]}</h2>
 
         {step === 'select' && (
           <div className="space-y-3">
@@ -173,22 +194,45 @@ export function OnboardingModal({
           />
         )}
 
-        {(step === 'business' || step === 'contact' || step === 'project') && (
-          <div className="space-y-4">
-            <p className="text-white/80">
-              {step === 'business' && 'Business creation form will appear here'}
-              {step === 'contact' && 'Contact creation form will appear here'}
-              {step === 'project' && 'Project creation form will appear here'}
-            </p>
-            <div className="flex gap-2">
-              <Button onClick={handleBack} variant="outline" className="flex-1">
-                Back
-              </Button>
-              <Button onClick={onClose} variant="default" className="flex-1">
-                Close
-              </Button>
-            </div>
-          </div>
+        {step === 'business' && user && (
+          <BusinessCreateForm
+            userId={user.uid}
+            onCancel={handleBack}
+            onSuccess={() => {
+              triggerAppDataRefresh()
+              triggerAppToast({ message: 'Business added' })
+              onClose()
+              setStep('select')
+            }}
+          />
+        )}
+
+        {step === 'contact' && user && (
+          <ContactCreateForm
+            userId={user.uid}
+            onCancel={handleBack}
+            onSwitchToBusiness={() => setStep('business')}
+            onSuccess={() => {
+              triggerAppDataRefresh()
+              triggerAppToast({ message: 'Contact added' })
+              onClose()
+              setStep('select')
+            }}
+          />
+        )}
+
+        {step === 'project' && (
+          <ProjectCreateForm
+            userId={user?.uid || ''}
+            onCancel={handleBack}
+            onSuccess={(projectId) => {
+              triggerAppDataRefresh()
+              triggerAppToast({ message: 'Project created' })
+              onProjectCreated?.(projectId)
+              onClose()
+              setStep('select')
+            }}
+          />
         )}
       </GlassPanel>
     </div>

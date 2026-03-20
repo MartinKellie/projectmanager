@@ -12,7 +12,31 @@ The app uses **Firebase** (Auth, Firestore) as per the technical spec. The Fireb
 
 Until you complete the steps below, the app keeps using the existing **local storage** layer (Firestore-compatible API in `lib/storage/firestore.ts`).
 
+### 8. Deploy Firestore security rules (required for writes)
+
+When you’re ready to allow the app to read/write Firestore data, deploy the rules:
+
+```bash
+npx firebase deploy --only firestore:rules --project <your-project-id>
+```
+
+This repo includes `firestore.rules` at the project root.
+
+### 9. Populate initial data (dummy seed)
+
+This app seeds sample data on first load using `DummyDataInitializer` (`components/onboarding/dummy-data-initializer.tsx`).
+After your rules are deployed, run the app locally (`npm run dev`) and open `http://localhost:3000` once. The seed will skip automatically if your collections already contain data.
+
 ---
+
+### 10. Deploy this app to Firebase Hosting (static)
+
+This repo is configured for Next.js static export, so Hosting can serve the generated files directly.
+
+1. Build the static output
+   - `npm run build:static`
+2. Deploy Hosting
+   - `npx firebase deploy --only hosting`
 
 ## What you need to do
 

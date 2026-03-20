@@ -1,9 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { getUserContacts } from '@/services/contacts'
+import { useEffect, useState, useCallback } from 'react'
+import { deleteContact, getUserContacts, updateContact } from '@/services/contacts'
 import { getUserBusinesses } from '@/services/businesses'
 import { AnimatedCard } from '@/components/ui/animated-card'
+import { APP_DATA_REFRESH_EVENT } from '@/lib/events/data-refresh'
+import { triggerAppToast } from '@/lib/events/toast'
 import type { Contact, Business } from '@/types/database'
 import { User, Mail, Phone, Briefcase, Building2 } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
@@ -17,31 +19,68 @@ export function ContactsView({ userId }: ContactsViewProps) {
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const [contactsResult, businessesResult] = await Promise.all([
-          getUserContacts(userId),
-          getUserBusinesses(userId),
-        ])
+  const loadData = useCallback(async () => {
+    try {
+      const [contactsResult, businessesResult] = await Promise.all([
+        getUserContacts(userId),
+        getUserBusinesses(userId),
+      ])
 
-        if (contactsResult.success) {
-          setContacts(contactsResult.data)
-        }
-        if (businessesResult.success) {
-          setBusinesses(businessesResult.data)
-        }
-      } catch (error) {
-        console.error('Failed to load contacts:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    if (userId) {
-      loadData()
+      if (contactsResult.success) setContacts(contactsResult.data)
+      if (businessesResult.success) setBusinesses(businessesResult.data)
+    } catch (error) {
+      console.error('Failed to load contacts:', error)
+    } finally {
+      setLoading(false)
     }
   }, [userId])
+
+  useEffect(() => {
+    if (userId) loadData()
+  }, [userId, loadData])
+
+  async function handleEditContact(contact: Contact) {
+    const nextFirstName = window.prompt('First name', contact.firstName)
+    if (nextFirstName === null) return
+
+    const nextLastName = window.prompt('Last name', contact.lastName)
+    if (nextLastName === null) return
+
+    const nextEmail = window.prompt('Email', contact.email || '')
+    if (nextEmail === null) return
+
+    const result = await updateContact(contact.id, {
+      firstName: nextFirstName.trim() || contact.firstName,
+      lastName: nextLastName.trim() || contact.lastName,
+      email: nextEmail.trim() || null,
+    })
+    if (!result.success) return window.alert(result.error || 'Failed to update contact')
+
+    triggerAppToast({ message: 'Contact updated' })
+    loadData()
+  }
+
+  async function handleDeleteContact(contact: Contact) {
+    const confirmed = window.confirm(`Delete contact "${contact.firstName} ${contact.lastName}"?`)
+    if (!confirmed) return
+
+    const result = await deleteContact(contact.id)
+    if (!result.success) return window.alert(result.error || 'Failed to delete contact')
+
+    triggerAppToast({ message: 'Contact deleted' })
+    loadData()
+  }
+
+  useEffect(() => {
+    function handleRefresh() {
+      if (!userId) return
+      setLoading(true)
+      loadData()
+    }
+
+    window.addEventListener(APP_DATA_REFRESH_EVENT, handleRefresh)
+    return () => window.removeEventListener(APP_DATA_REFRESH_EVENT, handleRefresh)
+  }, [userId, loadData])
 
   const getBusinessName = (businessId: string) => {
     return businesses.find((b) => b.id === businessId)?.name || 'Unknown Business'
@@ -80,6 +119,10 @@ export function ContactsView({ userId }: ContactsViewProps) {
               <h3 className="font-semibold mb-1">
                 {contact.firstName} {contact.lastName}
               </h3>
+              <div className="mb-2 flex items-center gap-2">
+                <button className="text-xs text-white/60 hover:text-white" onClick={() => handleEditContact(contact)}>Edit</button>
+                <button className="text-xs text-red-300 hover:text-red-200" onClick={() => handleDeleteContact(contact)}>Delete</button>
+              </div>
               <div className="space-y-1 text-xs text-white/60">
                 <div className="flex items-center gap-2">
                   <Building2 size={12} />

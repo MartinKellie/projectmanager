@@ -10,8 +10,6 @@ import {
   deleteDocument,
   businessesCollection,
   where,
-  orderBy,
-  dateToTimestamp,
 } from '@/lib/storage/firestore'
 import type { Business } from '@/types/database'
 import type { ActionResponse } from '@/types/actions'
@@ -36,8 +34,8 @@ export async function getUserBusinesses(userId: string): Promise<ActionResponse<
     const businesses = await getDocuments<Business>(businessesCollection, [
       where('userId', '==', userId),
       where('archived', '==', false),
-      orderBy('name', 'asc'),
     ])
+    businesses.sort((a, b) => a.name.localeCompare(b.name))
     return { success: true, data: businesses }
   } catch (error) {
     return {

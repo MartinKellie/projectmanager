@@ -12,7 +12,6 @@ import {
   projectsCollection,
   projectConfidenceHistoryCollection,
   where,
-  orderBy,
   dateToTimestamp,
 } from '@/lib/storage/firestore'
 import type { Project, ProjectConfidenceHistory } from '@/types/database'
@@ -38,8 +37,12 @@ export async function getUserProjects(userId: string): Promise<ActionResponse<Pr
     const projects = await getDocuments<Project>(projectsCollection, [
       where('userId', '==', userId),
       where('archived', '==', false),
-      orderBy('lastTouchedAt', 'desc'),
     ])
+    projects.sort((a, b) => {
+      const aTs = new Date(a.lastTouchedAt).getTime()
+      const bTs = new Date(b.lastTouchedAt).getTime()
+      return bTs - aTs
+    })
     return { success: true, data: projects }
   } catch (error) {
     return {

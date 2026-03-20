@@ -10,8 +10,6 @@ import {
   deleteDocument,
   contactsCollection,
   where,
-  orderBy,
-  dateToTimestamp,
 } from '@/lib/storage/firestore'
 import type { Contact } from '@/types/database'
 import type { ActionResponse } from '@/types/actions'
@@ -36,8 +34,8 @@ export async function getBusinessContacts(businessId: string): Promise<ActionRes
     const contacts = await getDocuments<Contact>(contactsCollection, [
       where('businessId', '==', businessId),
       where('archived', '==', false),
-      orderBy('lastName', 'asc'),
     ])
+    contacts.sort((a, b) => `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`))
     return { success: true, data: contacts }
   } catch (error) {
     return {
@@ -52,8 +50,8 @@ export async function getUserContacts(userId: string): Promise<ActionResponse<Co
     const contacts = await getDocuments<Contact>(contactsCollection, [
       where('userId', '==', userId),
       where('archived', '==', false),
-      orderBy('lastName', 'asc'),
     ])
+    contacts.sort((a, b) => `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`))
     return { success: true, data: contacts }
   } catch (error) {
     return {

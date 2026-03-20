@@ -20,56 +20,56 @@ service cloud.firestore {
     }
 
     match /businesses/{docId} {
-      allow read: if isSharedOwner(resource.data)
+      allow read: if signedIn()
       allow create: if isSharedOwner(request.resource.data)
       allow update: if isSharedOwner(resource.data) && isSharedOwner(request.resource.data)
       allow delete: if isSharedOwner(resource.data)
     }
 
     match /contacts/{docId} {
-      allow read: if isSharedOwner(resource.data)
+      allow read: if signedIn()
       allow create: if isSharedOwner(request.resource.data)
       allow update: if isSharedOwner(resource.data) && isSharedOwner(request.resource.data)
       allow delete: if isSharedOwner(resource.data)
     }
 
     match /projects/{docId} {
-      allow read: if isSharedOwner(resource.data)
+      allow read: if signedIn()
       allow create: if isSharedOwner(request.resource.data)
       allow update: if isSharedOwner(resource.data) && isSharedOwner(request.resource.data)
       allow delete: if isSharedOwner(resource.data)
     }
 
     match /actions/{docId} {
-      allow read: if isSharedOwner(resource.data)
+      allow read: if signedIn()
       allow create: if isSharedOwner(request.resource.data)
       allow update: if isSharedOwner(resource.data) && isSharedOwner(request.resource.data)
       allow delete: if isSharedOwner(resource.data)
     }
 
     match /timeLogs/{docId} {
-      allow read: if isSharedOwner(resource.data)
+      allow read: if signedIn()
       allow create: if isSharedOwner(request.resource.data)
       allow update: if isSharedOwner(resource.data) && isSharedOwner(request.resource.data)
       allow delete: if isSharedOwner(resource.data)
     }
 
     match /dailyIntent/{docId} {
-      allow read: if isSharedOwner(resource.data)
+      allow read: if signedIn()
       allow create: if isSharedOwner(request.resource.data)
       allow update: if isSharedOwner(resource.data) && isSharedOwner(request.resource.data)
       allow delete: if isSharedOwner(resource.data)
     }
 
     match /dailyPlan/{docId} {
-      allow read: if isSharedOwner(resource.data)
+      allow read: if signedIn()
       allow create: if isSharedOwner(request.resource.data)
       allow update: if isSharedOwner(resource.data) && isSharedOwner(request.resource.data)
       allow delete: if isSharedOwner(resource.data)
     }
 
     match /aiEvents/{docId} {
-      allow read: if isSharedOwner(resource.data)
+      allow read: if signedIn()
       allow create: if isSharedOwner(request.resource.data)
       allow update: if isSharedOwner(resource.data) && isSharedOwner(request.resource.data)
       allow delete: if isSharedOwner(resource.data)

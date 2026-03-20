@@ -43,6 +43,14 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to see the application.
 
+### Cursor preview works, but your browser cannot reach it
+If Cursor shows the app in its built-in browser but your normal browser says "site can't be reached", make sure you have started the real Next.js dev server from a terminal:
+
+1. Run `npm run dev`
+2. Use the URL Next prints (typically `http://localhost:3000`)
+
+Cursor may also use its own internal preview port(s), which are not guaranteed to be reachable from your normal browser.
+
 ## Project Structure
 
 ```

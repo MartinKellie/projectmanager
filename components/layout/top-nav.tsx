@@ -8,6 +8,7 @@ import { initializeDummyData } from '@/lib/data/dummy-data'
 import { Plus, Database, Building2, User, FolderKanban, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { SettingsModal } from '@/components/settings/settings-modal'
+import type { OnboardingStep } from '@/components/onboarding/onboarding-modal'
 
 export type ViewType = 'dashboard' | 'businesses' | 'contacts' | 'projects'
 
@@ -19,6 +20,7 @@ interface TopNavProps {
 export function TopNav({ currentView, onViewChange }: TopNavProps) {
   const { user } = useAuthContext()
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false)
+  const [addNewInitialStep, setAddNewInitialStep] = useState<OnboardingStep>('select')
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
 
   const handleBusinessCreate = () => {
@@ -47,6 +49,17 @@ export function TopNav({ currentView, onViewChange }: TopNavProps) {
         alert(`Failed to initialize dummy data: ${error instanceof Error ? error.message : 'Unknown error'}`)
       }
     }
+  }
+
+  const handleAddNewClick = () => {
+    const initialStepByView: Record<ViewType, OnboardingStep> = {
+      dashboard: 'select',
+      businesses: 'business',
+      contacts: 'contact',
+      projects: 'project-template',
+    }
+    setAddNewInitialStep(initialStepByView[currentView])
+    setIsOnboardingOpen(true)
   }
 
   return (
@@ -96,7 +109,7 @@ export function TopNav({ currentView, onViewChange }: TopNavProps) {
 
         <div className="flex items-center gap-2">
           <Button
-            onClick={() => setIsOnboardingOpen(true)}
+            onClick={handleAddNewClick}
             variant="ghost"
             size="sm"
             className="gap-2"
@@ -133,6 +146,7 @@ export function TopNav({ currentView, onViewChange }: TopNavProps) {
       <OnboardingModal
         isOpen={isOnboardingOpen}
         onClose={() => setIsOnboardingOpen(false)}
+        initialStep={addNewInitialStep}
         onBusinessCreate={handleBusinessCreate}
         onContactCreate={handleContactCreate}
         onProjectCreate={handleProjectCreate}

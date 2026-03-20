@@ -5,6 +5,7 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from '
 interface Settings {
   glimmerEnabled: boolean
   glimmerRandomColor: boolean
+  toastsEnabled: boolean
 }
 
 interface SettingsContextValue {
@@ -17,6 +18,7 @@ const SettingsContext = createContext<SettingsContextValue | undefined>(undefine
 const DEFAULT_SETTINGS: Settings = {
   glimmerEnabled: true,
   glimmerRandomColor: false,
+  toastsEnabled: true,
 }
 
 const SETTINGS_STORAGE_KEY = 'app_settings'

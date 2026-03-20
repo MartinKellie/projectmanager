@@ -10,7 +10,6 @@ import {
   deleteDocument,
   actionsCollection,
   where,
-  orderBy,
   dateToTimestamp,
 } from '@/lib/storage/firestore'
 import type { Action } from '@/types/database'
@@ -36,8 +35,8 @@ export async function getUserActions(userId: string): Promise<ActionResponse<Act
     const actions = await getDocuments<Action>(actionsCollection, [
       where('userId', '==', userId),
       where('status', '==', 'active'),
-      orderBy('orderIndex', 'asc'),
     ])
+    actions.sort((a, b) => a.orderIndex - b.orderIndex)
     return { success: true, data: actions }
   } catch (error) {
     return {
@@ -53,8 +52,8 @@ export async function getTodayActions(userId: string): Promise<ActionResponse<Ac
       where('userId', '==', userId),
       where('surfacedToday', '==', true),
       where('status', '==', 'active'),
-      orderBy('orderIndex', 'asc'),
     ])
+    actions.sort((a, b) => a.orderIndex - b.orderIndex)
     return { success: true, data: actions }
   } catch (error) {
     return {

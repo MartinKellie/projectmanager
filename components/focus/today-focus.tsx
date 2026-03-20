@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { GlassPanel } from '@/components/layout/glass-panel'
 import { AnimatedCard } from '@/components/ui/animated-card'
 import { Button } from '@/components/ui/button'
@@ -16,7 +16,7 @@ import { Sparkles, CheckCircle2, Circle, Target, MessageSquare, Trophy } from 'l
 import { cn } from '@/lib/utils/cn'
 
 export function TodayFocus() {
-  const { user } = useAuthContext()
+  const { user, loading: authLoading, error: authError } = useAuthContext()
   const [intent, setIntent] = useState<DailyIntent | null>(null)
   const [plan, setPlan] = useState<DailyPlan | null>(null)
   const [actions, setActions] = useState<Action[]>([])
@@ -25,46 +25,86 @@ export function TodayFocus() {
   const [conversationMessages, setConversationMessages] = useState<Array<{ role: 'user' | 'ai'; text: string }>>([])
   const [conversationInput, setConversationInput] = useState('')
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [debugState, setDebugState] = useState({
+    step: 'idle',
+    intent: 'idle',
+    plan: 'idle',
+    actions: 'idle',
+  })
 
-  useEffect(() => {
-    if (user) {
-      loadData()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user])
-
-  async function loadData() {
+  const loadData = useCallback(async () => {
     if (!user) return
 
     setLoading(true)
     try {
-      const [intentResult, planResult, actionsResult] = await Promise.all([
-        getTodayIntent(user.uid),
-        getTodayPlan(user.uid),
-        getTodayActions(user.uid),
+      setLoadError(null)
+      setDebugState({
+        step: 'loading',
+        intent: 'loading',
+        plan: 'loading',
+        actions: 'loading',
+      })
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Request timed out while loading today data')), 12000)
+      })
+      const [intentResult, planResult, actionsResult] = await Promise.race([
+        Promise.all([
+          getTodayIntent(user.uid),
+          getTodayPlan(user.uid),
+          getTodayActions(user.uid),
+        ]),
+        timeoutPromise,
       ])
 
       if (intentResult.success) {
         setIntent(intentResult.data)
+        setDebugState((prev) => ({ ...prev, intent: intentResult.data ? 'ok-has-data' : 'ok-empty' }))
         // Show startup modal if no intent for today
-        if (!intentResult.data) {
-          setShowStartupModal(true)
-        }
+        if (!intentResult.data) setShowStartupModal(true)
+      } else {
+        setLoadError(intentResult.error || 'Failed to load daily intent')
+        setDebugState((prev) => ({ ...prev, intent: 'error' }))
       }
 
       if (planResult.success) {
         setPlan(planResult.data)
+        setDebugState((prev) => ({ ...prev, plan: planResult.data ? 'ok-has-data' : 'ok-empty' }))
+      } else {
+        setLoadError((prev) => prev || planResult.error || 'Failed to load daily plan')
+        setDebugState((prev) => ({ ...prev, plan: 'error' }))
       }
 
       if (actionsResult.success) {
         setActions(actionsResult.data)
+        setDebugState((prev) => ({ ...prev, actions: 'ok' }))
+      } else {
+        setLoadError((prev) => prev || actionsResult.error || 'Failed to load actions')
+        setDebugState((prev) => ({ ...prev, actions: 'error' }))
       }
+      setDebugState((prev) => ({ ...prev, step: 'loaded' }))
     } catch (error) {
       console.error('Failed to load focus data:', error)
+      setLoadError(error instanceof Error ? error.message : 'Failed to load focus data')
+      setDebugState((prev) => ({ ...prev, step: 'error' }))
     } finally {
       setLoading(false)
     }
-  }
+  }, [user])
+
+  useEffect(() => {
+    if (authLoading) {
+      setLoading(true)
+      return
+    }
+
+    if (!user) {
+      setLoading(false)
+      return
+    }
+
+    loadData()
+  }, [user, authLoading, loadData])
 
   const handlePlanMyDayWithDefault = async () => {
     if (!user) return
@@ -172,7 +212,7 @@ export function TodayFocus() {
     await loadData()
   }
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="p-4">
         <GlassPanel>
@@ -182,8 +222,61 @@ export function TodayFocus() {
     )
   }
 
+  if (!user) {
+    return (
+      <div className="p-4">
+        <GlassPanel>
+          {authError ? (
+            <>
+              <p className="text-sm text-red-300">Sign-in failed.</p>
+              <p className="text-xs text-white/60 mt-1">{authError}</p>
+              <p className="text-xs text-white/50 mt-2">
+                Check Firebase Authentication and enable Anonymous sign-in for local/dev use.
+              </p>
+            </>
+          ) : (
+            <p className="text-sm text-white/60">Signing you in…</p>
+          )}
+          {process.env.NODE_ENV === 'development' && (
+            <p className="text-xs text-white/50 mt-2">
+              Debug: authLoading={String(authLoading)} user={String(Boolean(user))}
+            </p>
+          )}
+        </GlassPanel>
+      </div>
+    )
+  }
+
+  if (loadError) {
+    return (
+      <div className="p-4">
+        <GlassPanel>
+          <p className="text-sm text-red-300 mb-1">Could not load today&apos;s focus.</p>
+          <p className="text-xs text-white/60 mb-3">{loadError}</p>
+          <Button onClick={() => loadData()} type="button" variant="outline">
+            Retry
+          </Button>
+        </GlassPanel>
+      </div>
+    )
+  }
+
   return (
     <div className="p-4 space-y-4">
+      {process.env.NODE_ENV === 'development' && (
+        <GlassPanel className="p-3">
+          <p className="text-xs text-white/70">
+            Debug: authLoading={String(authLoading)} user={String(Boolean(user))} loading={String(loading)} step={debugState.step}
+          </p>
+          <p className="text-xs text-white/50 mt-1">
+            dailyIntent={debugState.intent} dailyPlan={debugState.plan} todayActions={debugState.actions}
+          </p>
+          {loadError && (
+            <p className="text-xs text-red-300 mt-1">error={loadError}</p>
+          )}
+        </GlassPanel>
+      )}
+
       <DailyStartupModal
         isOpen={showStartupModal}
         userId={user?.uid || ''}
