@@ -1,0 +1,93 @@
+rules_version = '2'
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null
+    }
+
+    function isSharedOwner(data) {
+      // This app stores `userId` on most documents. To share the same dataset
+      // across laptops without a sign-in UI, we always map authenticated users
+      // to a stable logical uid of `shared` in `lib/storage/auth.ts`.
+      return signedIn() && data.userId == 'shared'
+    }
+
+    function projectOwner(projectId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/projects/$(projectId))
+        && get(/databases/$(database)/documents/projects/$(projectId)).data.userId == 'shared'
+    }
+
+    match /businesses/{docId} {
+      allow read: if isSharedOwner(resource.data)
+      allow create: if isSharedOwner(request.resource.data)
+      allow update: if isSharedOwner(resource.data) && isSharedOwner(request.resource.data)
+      allow delete: if isSharedOwner(resource.data)
+    }
+
+    match /contacts/{docId} {
+      allow read: if isSharedOwner(resource.data)
+      allow create: if isSharedOwner(request.resource.data)
+      allow update: if isSharedOwner(resource.data) && isSharedOwner(request.resource.data)
+      allow delete: if isSharedOwner(resource.data)
+    }
+
+    match /projects/{docId} {
+      allow read: if isSharedOwner(resource.data)
+      allow create: if isSharedOwner(request.resource.data)
+      allow update: if isSharedOwner(resource.data) && isSharedOwner(request.resource.data)
+      allow delete: if isSharedOwner(resource.data)
+    }
+
+    match /actions/{docId} {
+      allow read: if isSharedOwner(resource.data)
+      allow create: if isSharedOwner(request.resource.data)
+      allow update: if isSharedOwner(resource.data) && isSharedOwner(request.resource.data)
+      allow delete: if isSharedOwner(resource.data)
+    }
+
+    match /timeLogs/{docId} {
+      allow read: if isSharedOwner(resource.data)
+      allow create: if isSharedOwner(request.resource.data)
+      allow update: if isSharedOwner(resource.data) && isSharedOwner(request.resource.data)
+      allow delete: if isSharedOwner(resource.data)
+    }
+
+    match /dailyIntent/{docId} {
+      allow read: if isSharedOwner(resource.data)
+      allow create: if isSharedOwner(request.resource.data)
+      allow update: if isSharedOwner(resource.data) && isSharedOwner(request.resource.data)
+      allow delete: if isSharedOwner(resource.data)
+    }
+
+    match /dailyPlan/{docId} {
+      allow read: if isSharedOwner(resource.data)
+      allow create: if isSharedOwner(request.resource.data)
+      allow update: if isSharedOwner(resource.data) && isSharedOwner(request.resource.data)
+      allow delete: if isSharedOwner(resource.data)
+    }
+
+    match /aiEvents/{docId} {
+      allow read: if isSharedOwner(resource.data)
+      allow create: if isSharedOwner(request.resource.data)
+      allow update: if isSharedOwner(resource.data) && isSharedOwner(request.resource.data)
+      allow delete: if isSharedOwner(resource.data)
+    }
+
+    match /projectConfidenceHistory/{docId} {
+      // This collection doesn't store `userId`; ownership is derived from the referenced project.
+      allow read: if signedIn() && projectOwner(resource.data.projectId)
+      allow create: if signedIn() && projectOwner(request.resource.data.projectId)
+      allow update: if signedIn()
+        && projectOwner(resource.data.projectId)
+        && projectOwner(request.resource.data.projectId)
+      allow delete: if signedIn() && projectOwner(resource.data.projectId)
+    }
+
+    match /{document=**} {
+      allow read, write: if false
+    }
+  }
+}
+

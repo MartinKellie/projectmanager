@@ -34,7 +34,10 @@ function notifyListeners() {
 function mapUser(user: User | null): AuthUser | null {
   if (!user) return null
   return {
-    uid: user.uid,
+    // We want the same dataset across laptops without adding a sign-in UI.
+    // So we store a stable shared uid in our `userId` fields.
+    // Security-wise: Firestore rules should mirror this (see `firestore.rules`).
+    uid: 'shared',
     email: user.email,
     displayName: user.displayName,
   }
