@@ -8,23 +8,28 @@ import { PlaceholderDetailSection } from './placeholder-detail-section'
 import { DetailModalActions } from './detail-modal-actions'
 import { SampleDataNotice } from './sample-data-notice'
 import { isSampleProject } from '@/lib/data/is-sample-data'
+import { ProjectDetailScopeSection } from './project-detail-scope-section'
 
 interface ProjectDetailModalProps {
+  userId: string
   project: Project | null
   linkedBusinessName: string | null
   isOpen: boolean
   onClose: () => void
   onEdit?: () => void | Promise<void>
   onDelete?: () => void | Promise<void>
+  onProjectUpdated?: () => void
 }
 
 export function ProjectDetailModal({
+  userId,
   project,
   linkedBusinessName,
   isOpen,
   onClose,
   onEdit,
   onDelete,
+  onProjectUpdated,
 }: ProjectDetailModalProps) {
   if (!isOpen || !project) return null
 
@@ -93,6 +98,13 @@ export function ProjectDetailModal({
         />
         <DetailFieldRow label="Record ID" value={<code className="text-xs text-white/70">{project.id}</code>} />
       </DetailFieldList>
+
+      <ProjectDetailScopeSection
+        userId={userId}
+        project={project}
+        onProjectUpdated={() => onProjectUpdated?.()}
+      />
+
       <PlaceholderDetailSection />
     </DetailModalShell>
   )

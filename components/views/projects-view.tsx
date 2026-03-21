@@ -60,6 +60,14 @@ export function ProjectsView({ userId }: ProjectsViewProps) {
     return () => window.removeEventListener(APP_DATA_REFRESH_EVENT, handleRefresh)
   }, [userId, loadProjects])
 
+  useEffect(() => {
+    setDetailProject((prev) => {
+      if (!prev) return null
+      const next = projects.find((p) => p.id === prev.id)
+      return next ?? prev
+    })
+  }, [projects])
+
   async function handleDeleteProject(project: Project) {
     const ok = await promptAndDeleteProject(project)
     if (!ok) return
@@ -160,6 +168,7 @@ export function ProjectsView({ userId }: ProjectsViewProps) {
         ))}
       </div>
       <ProjectDetailModal
+        userId={userId}
         project={detailProject}
         linkedBusinessName={
           detailProject ? getLinkedBusinessName(detailProject) : null
@@ -175,6 +184,7 @@ export function ProjectsView({ userId }: ProjectsViewProps) {
           if (!detailProject) return
           void handleDeleteProject(detailProject)
         }}
+        onProjectUpdated={() => void loadProjects()}
       />
       <EditProjectModal
         userId={userId}

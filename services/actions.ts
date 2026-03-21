@@ -63,6 +63,100 @@ export async function getTodayActions(userId: string): Promise<ActionResponse<Ac
   }
 }
 
+/**
+ * Backlog actions for a project: not surfaced on "today", ordered per project.
+ */
+export async function getProjectBacklogActions(
+  userId: string,
+  projectId: string
+): Promise<ActionResponse<Action[]>> {
+  try {
+    const actions = await getDocuments<Action>(actionsCollection, [
+      where('userId', '==', userId),
+      where('projectId', '==', projectId),
+    ])
+    const backlog = actions.filter(
+      (a) => a.status === 'active' && a.surfacedToday === false
+    )
+    backlog.sort((a, b) => a.orderIndex - b.orderIndex)
+    return { success: true, data: backlog }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch project backlog',
+    }
+  }
+}
+
+export async function createProjectBacklogAction(
+  userId: string,
+  projectId: string,
+  text: string,
+  orderIndex: number
+): Promise<ActionResponse<string>> {
+  try {
+    const actionId = await createDocument<Action>(
+      actionsCollection,
+      {
+        text: text.trim(),
+        projectId,
+        userId,
+        status: 'active',
+        surfacedToday: false,
+        orderIndex,
+        completedAt: null,
+      }
+    )
+    return { success: true, data: actionId }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to create backlog action',
+    }
+  }
+}
+
+/** Deletes all active backlog actions for a project (not surfaced today). */
+export async function deleteProjectBacklogActions(
+  userId: string,
+  projectId: string
+): Promise<ActionResponse<void>> {
+  const result = await getProjectBacklogActions(userId, projectId)
+  if (!result.success) {
+    return { success: false, error: result.error || 'Failed to load backlog' }
+  }
+  try {
+    for (const action of result.data) {
+      await deleteDocument(actionsCollection, action.id)
+    }
+    return { success: true, data: undefined }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to delete backlog actions',
+    }
+  }
+}
+
+/** Replace backlog with new ordered tasks (v1: full replace). */
+export async function replaceProjectBacklogActions(
+  userId: string,
+  projectId: string,
+  taskTexts: string[]
+): Promise<ActionResponse<void>> {
+  const del = await deleteProjectBacklogActions(userId, projectId)
+  if (!del.success) return del
+
+  const trimmed = taskTexts.map((t) => t.trim()).filter(Boolean)
+  for (let i = 0; i < trimmed.length; i++) {
+    const created = await createProjectBacklogAction(userId, projectId, trimmed[i], i)
+    if (!created.success) {
+      return { success: false, error: created.error || 'Failed to create task' }
+    }
+  }
+  return { success: true, data: undefined }
+}
+
 export async function createAction(
   userId: string,
   actionData: Omit<Action, 'id' | 'userId' | 'createdAt' | 'status' | 'completedAt' | 'surfacedToday' | 'orderIndex'>

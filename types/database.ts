@@ -64,6 +64,8 @@ export interface Project {
   archived: boolean
   templateProjectId: string | null // If created from a template, reference the original project
   isSampleData?: boolean
+  /** Imported scope (e.g. scope.md) for task generation; optional */
+  scopeMarkdown?: string | null
 }
 
 export interface TimeLog {

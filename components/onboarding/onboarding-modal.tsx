@@ -227,7 +227,10 @@ export function OnboardingModal({
             onCancel={handleBack}
             onSuccess={(projectId) => {
               triggerAppDataRefresh()
-              triggerAppToast({ message: 'Project created' })
+              triggerAppToast({
+                message:
+                  'Project created — open it from Projects to add scope.md and generate tasks.',
+              })
               onProjectCreated?.(projectId)
               onClose()
               setStep('select')

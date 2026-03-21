@@ -52,7 +52,6 @@ export async function listAvailableModels(): Promise<string[]> {
     if (response.ok) {
       const data = await response.json()
       const models = data.models?.map((m: any) => m.name) || []
-      console.log('Available models from API:', models)
       return models
     } else {
       const errorText = await response.text()
@@ -96,11 +95,8 @@ export async function callGemini(
   let availableModels: string[] = []
   try {
     availableModels = await listAvailableModels()
-    if (availableModels.length > 0) {
-      console.log('Found available Gemini models:', availableModels)
-    } else {
+    if (availableModels.length === 0)
       console.warn('No models returned from ListModels API')
-    }
   } catch (error) {
     console.warn('Could not list models, trying defaults:', error)
   }
@@ -116,7 +112,6 @@ export async function callGemini(
   if (manualModel) {
     const modelName = manualModel.startsWith('models/') ? manualModel : `models/${manualModel}`
     modelsToTry.push({ name: modelName, version: 'v1beta' })
-    console.log('Using manually specified model:', modelName)
   }
   
   // Add available models from API
@@ -147,9 +142,7 @@ export async function callGemini(
       // URL format: /v1beta/models/{model}:generateContent
       // name already includes "models/" prefix
       const apiUrl = `https://generativelanguage.googleapis.com/${version}/${name}:generateContent?key=${apiKey}`
-      
-      console.log(`Trying model: ${name} at ${apiUrl.substring(0, 100)}...`)
-      
+
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
@@ -165,7 +158,6 @@ export async function callGemini(
           throw new Error('No response from Gemini API')
         }
 
-        console.log(`Successfully used model: ${name}`)
         return data.candidates[0].content.parts[0].text
       } else {
         // Try next model

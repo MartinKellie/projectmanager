@@ -43,6 +43,20 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to see the application.
 
+### Static export & hosting
+
+The app uses `output: 'export'` (see `next.config.js`), so builds output to **`out/`** (gitignored). **Always run `npm run build` before deploy** so `out/_next/` (CSS/JS) exists.
+
+| Goal | Command |
+|------|---------|
+| Development | `npm run dev` → open `http://localhost:3000` |
+| Preview production build locally | `npm run preview` or `npm run build` then `npm start` (serves **`out/`** on port 3000) |
+| Deploy to Firebase Hosting | `npm run deploy:hosting` |
+
+**`next start` is not supported** with static export — use `npm start` / `npm run preview` after building, or Firebase Hosting.
+
+**Unstyled UI or white page:** ensure the server’s document root is **`out/`**, not the repo root (otherwise `/_next/static/...` will 404). In the Network tab, `/_next/static/css/*.css` and `/_next/static/chunks/...` should return **200** as CSS/JS, not HTML. If CSS returns HTML, Firebase often rewrote `index.html` because `out/_next` was missing — rebuild and redeploy. Do not open `out/index.html` via `file://`.
+
 ### Cursor preview works, but your browser cannot reach it
 If Cursor shows the app in its built-in browser but your normal browser says "site can't be reached", make sure you have started the real Next.js dev server from a terminal:
 

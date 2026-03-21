@@ -1,12 +1,13 @@
 {
   "name": "ai-productivity-os",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p 3000",
     "build": "next build",
-    "build:static": "next build",
-    "start": "next start -H 0.0.0.0 -p 3000",
+    "deploy:hosting": "npm run build && firebase deploy --only hosting",
+    "start": "serve out -p 3000",
+    "preview": "npm run build && serve out -p 3000",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "firebase": "firebase"
@@ -31,6 +32,7 @@
     "eslint-config-next": "^14.2.0",
     "firebase-tools": "^15.7.0",
     "postcss": "^8.4.0",
+    "serve": "^14.2.4",
     "tailwindcss": "^3.4.0",
     "typescript": "^5.3.0"
   }

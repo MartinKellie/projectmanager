@@ -68,9 +68,17 @@ export function ProjectCreateForm({ userId, onCancel, onSuccess }: ProjectCreate
           onChange={(event) => setBusinessId(event.target.value)}
           className="w-full px-3 py-2 rounded-lg glass border border-white/10 bg-black/20 text-white text-sm"
         >
-          <option value="">No business (personal/internal)</option>
+          <option value="" className="bg-slate-900 text-white">
+            No business (personal/internal)
+          </option>
           {businesses.map((business) => (
-            <option key={business.id} value={business.id}>{business.name}</option>
+            <option
+              key={business.id}
+              value={business.id}
+              className="bg-slate-900 text-white"
+            >
+              {business.name}
+            </option>
           ))}
         </select>
       )}

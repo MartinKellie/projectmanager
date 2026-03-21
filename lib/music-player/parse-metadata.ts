@@ -1,8 +1,5 @@
-/**
- * Parse audio file metadata from tags; fallback to path/filename.
- */
+/** Parse audio file metadata from tags; fallback to path/filename. Tag parsing is loaded via dynamic import so SSR does not bundle `music-metadata-browser`. */
 
-import { parseBlob, selectCover } from 'music-metadata-browser'
 import type { ScannedEntry, Track, TrackMetadata } from './types'
 
 /** Derive artist, album, trackNo, title from path like "Artist/Album/01 - Title.mp3". */
@@ -24,6 +21,7 @@ export async function parseFileMetadata(
   const fallback = metadataFromPath(entry.path, entry.path.split('/').pop() || '')
   try {
     const file = await entry.fileHandle.getFile()
+    const { parseBlob, selectCover } = await import('music-metadata-browser')
     const meta = await parseBlob(file)
     const common = meta.common
     const artist = common.artist ?? common.albumartist ?? fallback.artist

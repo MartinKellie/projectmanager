@@ -89,6 +89,14 @@ export function ProjectList({ userId }: ProjectListProps) {
   }, [userId, loadProjects])
 
   useEffect(() => {
+    setDetailProject((prev) => {
+      if (!prev) return null
+      const next = projects.find((p) => p.id === prev.id)
+      return next ?? prev
+    })
+  }, [projects])
+
+  useEffect(() => {
     function handleRefresh() {
       if (!userId) return
       setLoading(true)
@@ -172,6 +180,7 @@ export function ProjectList({ userId }: ProjectListProps) {
         ))}
       </div>
       <ProjectDetailModal
+        userId={userId}
         project={detailProject}
         linkedBusinessName={
           detailProject ? getLinkedBusinessName(detailProject) : null
@@ -187,6 +196,7 @@ export function ProjectList({ userId }: ProjectListProps) {
           if (!detailProject) return
           void handleDeleteProject(detailProject)
         }}
+        onProjectUpdated={() => void loadProjects()}
       />
       <EditProjectModal
         userId={userId}

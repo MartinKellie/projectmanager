@@ -21,16 +21,10 @@ async function hasExistingData(userId: string): Promise<boolean> {
 }
 
 export async function initializeDummyData(userId: string): Promise<void> {
-  console.log('Initializing dummy data for user:', userId)
-  
   const hasData = await hasExistingData(userId)
-  if (hasData) {
-    console.log('Dummy data already exists, skipping initialization')
-    return
-  }
+  if (hasData) return
 
   try {
-    console.log('Creating dummy businesses...')
     // Create businesses
     const acmeCorpId = await createBusiness(userId, {
       name: 'Acme Corporation',
@@ -202,7 +196,6 @@ export async function initializeDummyData(userId: string): Promise<void> {
       isSampleData: true,
     })
 
-    console.log('Dummy data initialization complete!')
   } catch (error) {
     console.error('Failed to initialize dummy data:', error)
     throw error

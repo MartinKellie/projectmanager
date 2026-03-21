@@ -132,7 +132,9 @@ export function EditProjectModal({
           onChange={(e) => setBusinessId(e.target.value)}
           className={formSelectClass}
         >
-          <option value="">No business (personal / internal)</option>
+          <option value="" className="bg-slate-900 text-white">
+            No business (personal / internal)
+          </option>
           {businesses.map((b) => (
             <option key={b.id} value={b.id} className="bg-slate-900 text-white">
               {b.name}

@@ -23,17 +23,11 @@ export function TopNav({ currentView, onViewChange }: TopNavProps) {
   const [addNewInitialStep, setAddNewInitialStep] = useState<OnboardingStep>('select')
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
 
-  const handleBusinessCreate = () => {
-    console.log('Create business')
-  }
+  const handleBusinessCreate = () => {}
 
-  const handleContactCreate = () => {
-    console.log('Create contact')
-  }
+  const handleContactCreate = () => {}
 
-  const handleProjectCreate = () => {
-    console.log('Create project')
-  }
+  const handleProjectCreate = () => {}
 
   const handleInitializeDummyData = async () => {
     if (user) {
@@ -150,8 +144,7 @@ export function TopNav({ currentView, onViewChange }: TopNavProps) {
         onBusinessCreate={handleBusinessCreate}
         onContactCreate={handleContactCreate}
         onProjectCreate={handleProjectCreate}
-        onProjectCreated={(projectId) => {
-          console.log('Project created:', projectId)
+        onProjectCreated={() => {
           setIsOnboardingOpen(false)
         }}
       />

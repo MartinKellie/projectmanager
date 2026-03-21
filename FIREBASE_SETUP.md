@@ -34,7 +34,7 @@ After your rules are deployed, run the app locally (`npm run dev`) and open `htt
 This repo is configured for Next.js static export, so Hosting can serve the generated files directly.
 
 1. Build the static output
-   - `npm run build:static`
+   - `npm run build`
 2. Deploy Hosting
    - `npx firebase deploy --only hosting`
 

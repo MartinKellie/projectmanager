@@ -211,7 +211,6 @@ export function DailyStartupModal({ isOpen, userId, onComplete }: DailyStartupMo
                   checked={protectDeepWork}
                   onChange={(e) => {
                     setProtectDeepWork(e.target.checked)
-                    console.log('Protect deep work:', e.target.checked)
                   }}
                   className="w-4 h-4 rounded glass border-white/20 accent-white/20 cursor-pointer"
                 />

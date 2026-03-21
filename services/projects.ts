@@ -181,6 +181,7 @@ export async function cloneProject(
       confidenceScore: overrides.confidenceScore !== undefined ? overrides.confidenceScore : 50, // Reset to neutral
       archived: false,
       templateProjectId: templateProjectId, // Track that this was cloned
+      scopeMarkdown: null,
     }
 
     const projectId = await createDocument<Project>(

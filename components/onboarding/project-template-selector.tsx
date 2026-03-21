@@ -112,11 +112,17 @@ export function ProjectTemplateSelector({
             <select
               value={selectedBusinessId || ''}
               onChange={(e) => setSelectedBusinessId(e.target.value || null)}
-              className="w-full px-3 py-2 rounded-lg glass border border-white/10 focus:outline-none focus:ring-2 focus:ring-white/20 bg-transparent"
+              className="w-full px-3 py-2 rounded-lg glass border border-white/10 focus:outline-none focus:ring-2 focus:ring-white/20 bg-black/20 text-white text-sm"
             >
-              <option value="">Personal Project</option>
+              <option value="" className="bg-slate-900 text-white">
+                Personal Project
+              </option>
               {businesses.map((business) => (
-                <option key={business.id} value={business.id}>
+                <option
+                  key={business.id}
+                  value={business.id}
+                  className="bg-slate-900 text-white"
+                >
                   {business.name}
                 </option>
               ))}

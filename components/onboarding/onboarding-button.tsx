@@ -19,20 +19,11 @@ export function OnboardingButton() {
     setIsModalOpen(false)
   }
 
-  const handleBusinessCreate = () => {
-    // TODO: Implement business creation form
-    console.log('Create business')
-  }
+  const handleBusinessCreate = () => {}
 
-  const handleContactCreate = () => {
-    // TODO: Implement contact creation form
-    console.log('Create contact')
-  }
+  const handleContactCreate = () => {}
 
-  const handleProjectCreate = () => {
-    // TODO: Implement project creation form
-    console.log('Create project')
-  }
+  const handleProjectCreate = () => {}
 
   const handleInitializeDummyData = async () => {
     if (user) {
@@ -78,9 +69,7 @@ export function OnboardingButton() {
         onBusinessCreate={handleBusinessCreate}
         onContactCreate={handleContactCreate}
         onProjectCreate={handleProjectCreate}
-        onProjectCreated={(projectId) => {
-          console.log('Project created:', projectId)
-          // TODO: Refresh project list or show success message
+        onProjectCreated={() => {
           handleClose()
         }}
       />

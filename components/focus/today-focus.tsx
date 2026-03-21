@@ -181,7 +181,6 @@ export function TodayFocus() {
     setPlanning(true)
     try {
       const planBias = intent.planBias || 'balanced'
-      console.log('Generating plan with bias:', planBias)
       const result = await generateDailyPlan(user.uid, planBias)
       await handlePlanResult(result)
     } catch (error) {
@@ -307,7 +306,6 @@ export function TodayFocus() {
         <Button
           onClick={(e) => {
             e.preventDefault()
-            console.log('Plan My Day clicked, intent:', intent)
             handlePlanMyDay()
           }}
           disabled={planning || !intent}
@@ -325,8 +323,6 @@ export function TodayFocus() {
         <Button
           onClick={(e) => {
             e.preventDefault()
-            console.log('Plan My Day clicked (no intent)')
-            // Allow planning with default balanced bias
             if (user) {
               handlePlanMyDayWithDefault()
             }
