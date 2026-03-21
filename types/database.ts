@@ -31,6 +31,8 @@ export interface Business {
   notes?: string | null
   createdAt: Date | string
   archived: boolean
+  /** Seeded demo rows — distinct from user “source of truth” data */
+  isSampleData?: boolean
 }
 
 export interface Contact {
@@ -45,6 +47,7 @@ export interface Contact {
   notes?: string | null
   createdAt: Date | string
   archived: boolean
+  isSampleData?: boolean
 }
 
 export interface Project {
@@ -60,6 +63,7 @@ export interface Project {
   createdAt: Date | string
   archived: boolean
   templateProjectId: string | null // If created from a template, reference the original project
+  isSampleData?: boolean
 }
 
 export interface TimeLog {

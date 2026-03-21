@@ -27,7 +27,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       
       {/* Modal */}
       <GlassPanel
-        variant="strong"
+        variant="solid"
         className="relative z-10 w-full max-w-md p-6 space-y-6"
       >
         <div className="flex items-center justify-between mb-4">

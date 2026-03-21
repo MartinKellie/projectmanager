@@ -6,6 +6,7 @@ import { ThreeColumnLayout } from './three-column-layout'
 import { BusinessesView } from '@/components/views/businesses-view'
 import { ContactsView } from '@/components/views/contacts-view'
 import { ProjectsView } from '@/components/views/projects-view'
+import { AbacusMiniBrowser } from '@/components/embedded-chat/abacus-mini-browser'
 import { useAuthContext } from '@/contexts/auth-context'
 import type { ViewType } from './top-nav'
 
@@ -50,8 +51,19 @@ export function AppLayout({
             rightColumn={rightColumn}
           />
         ) : (
-          <div className="h-full overflow-y-auto p-4">
-            {renderViewContent()}
+          <div className="relative z-10 flex h-full w-full overflow-hidden">
+            <aside className="w-64 flex-shrink-0 border-r border-white/10 h-full overflow-y-auto">
+              {leftColumn}
+            </aside>
+            <main className="flex-1 border-r border-white/10 h-full min-h-0 flex flex-col overflow-hidden">
+              <div className="flex-1 min-h-0 overflow-y-auto p-4">
+                {renderViewContent()}
+              </div>
+              <AbacusMiniBrowser />
+            </main>
+            <aside className="w-96 flex-shrink-0 h-full overflow-y-auto">
+              {rightColumn}
+            </aside>
           </div>
         )}
       </div>

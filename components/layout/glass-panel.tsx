@@ -6,7 +6,7 @@ import { type CSSProperties, type ReactNode } from 'react'
 interface GlassPanelProps {
   children: ReactNode
   className?: string
-  variant?: 'default' | 'strong'
+  variant?: 'default' | 'strong' | 'solid'
   glow?: boolean
   style?: CSSProperties
 }
@@ -22,7 +22,11 @@ export function GlassPanel({
     <div
       className={cn(
         'rounded-lg p-4 shadow-depth transition-gpu',
-        variant === 'strong' ? 'glass-strong' : 'glass',
+        variant === 'solid'
+          ? 'glass-solid'
+          : variant === 'strong'
+            ? 'glass-strong'
+            : 'glass',
         glow && 'glow-hover',
         className
       )}

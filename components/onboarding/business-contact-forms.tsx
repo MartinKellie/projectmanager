@@ -163,7 +163,13 @@ export function ContactCreateForm({
             className="w-full px-3 py-2 rounded-lg glass border border-white/10 bg-black/20 text-white text-sm"
           >
             {businesses.map((business) => (
-              <option key={business.id} value={business.id}>{business.name}</option>
+              <option
+                key={business.id}
+                value={business.id}
+                className="bg-slate-900 text-white"
+              >
+                {business.name}
+              </option>
             ))}
           </select>
           <input value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="First name" className="w-full px-3 py-2 rounded-lg glass border border-white/10 bg-transparent text-sm" />

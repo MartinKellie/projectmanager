@@ -37,6 +37,7 @@ export async function initializeDummyData(userId: string): Promise<void> {
       website: 'https://acme.example.com',
       industry: 'Technology',
       notes: 'Long-term client, very responsive',
+      isSampleData: true,
     }).then((r) => r.success ? r.data : null)
 
     const techStartupId = await createBusiness(userId, {
@@ -44,6 +45,7 @@ export async function initializeDummyData(userId: string): Promise<void> {
       website: 'https://techstartup.example.com',
       industry: 'Software',
       notes: 'Fast-growing startup, exciting projects',
+      isSampleData: true,
     }).then((r) => r.success ? r.data : null)
 
     const designStudioId = await createBusiness(userId, {
@@ -51,6 +53,7 @@ export async function initializeDummyData(userId: string): Promise<void> {
       website: 'https://creativedesign.example.com',
       industry: 'Design',
       notes: 'Design-focused agency, great collaboration',
+      isSampleData: true,
     }).then((r) => r.success ? r.data : null)
 
     // Create contacts
@@ -63,6 +66,7 @@ export async function initializeDummyData(userId: string): Promise<void> {
         phone: '+44 20 1234 5678',
         role: 'Project Manager',
         notes: 'Main point of contact for Acme projects',
+        isSampleData: true,
       })
 
       await createContact(userId, {
@@ -73,6 +77,7 @@ export async function initializeDummyData(userId: string): Promise<void> {
         phone: '+44 20 1234 5679',
         role: 'CTO',
         notes: 'Technical decision maker',
+        isSampleData: true,
       })
     }
 
@@ -85,6 +90,7 @@ export async function initializeDummyData(userId: string): Promise<void> {
         phone: '+44 20 2345 6789',
         role: 'Founder & CEO',
         notes: 'Very hands-on, involved in all projects',
+        isSampleData: true,
       })
 
       await createContact(userId, {
@@ -94,6 +100,7 @@ export async function initializeDummyData(userId: string): Promise<void> {
         email: 'emma@techstartup.example.com',
         role: 'Product Manager',
         notes: 'Handles product requirements',
+        isSampleData: true,
       })
     }
 
@@ -106,6 +113,7 @@ export async function initializeDummyData(userId: string): Promise<void> {
         phone: '+44 20 3456 7890',
         role: 'Creative Director',
         notes: 'Leads all creative projects',
+        isSampleData: true,
       })
     }
 
@@ -125,6 +133,7 @@ export async function initializeDummyData(userId: string): Promise<void> {
         confidenceScore: 75,
         archived: false,
         templateProjectId: null,
+        isSampleData: true,
       })
 
       await createProject(userId, {
@@ -136,6 +145,7 @@ export async function initializeDummyData(userId: string): Promise<void> {
         confidenceScore: 60,
         archived: false,
         templateProjectId: null,
+        isSampleData: true,
       })
     }
 
@@ -149,6 +159,7 @@ export async function initializeDummyData(userId: string): Promise<void> {
         confidenceScore: 85,
         archived: false,
         templateProjectId: null,
+        isSampleData: true,
       })
 
       await createProject(userId, {
@@ -160,6 +171,7 @@ export async function initializeDummyData(userId: string): Promise<void> {
         confidenceScore: 70,
         archived: false,
         templateProjectId: null,
+        isSampleData: true,
       })
     }
 
@@ -173,6 +185,7 @@ export async function initializeDummyData(userId: string): Promise<void> {
         confidenceScore: 90,
         archived: false,
         templateProjectId: null,
+        isSampleData: true,
       })
     }
 
@@ -186,6 +199,7 @@ export async function initializeDummyData(userId: string): Promise<void> {
       confidenceScore: 50,
       archived: false,
       templateProjectId: null,
+      isSampleData: true,
     })
 
     console.log('Dummy data initialization complete!')

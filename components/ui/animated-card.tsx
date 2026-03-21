@@ -9,6 +9,8 @@ interface AnimatedCardProps {
   children: ReactNode
   className?: string
   variant?: 'default' | 'strong'
+  /** Seeded/demo rows — warm tint vs user “source of truth” cards */
+  tone?: 'default' | 'sample'
   delay?: number
   index?: number
   shimmer?: boolean
@@ -29,6 +31,7 @@ export function AnimatedCard({
   children,
   className,
   variant = 'default',
+  tone = 'default',
   delay,
   index,
   shimmer = true,
@@ -148,7 +151,9 @@ export function AnimatedCard({
   return (
     <GlassPanel
       className={cn(
-        'card-hover transition-gpu relative',
+        'card-hover transition-gpu relative overflow-hidden',
+        tone === 'sample' &&
+          'ring-1 ring-inset ring-amber-500/35 bg-amber-950/35 border-amber-500/25',
         delayClass,
         shimmer && 'card-shimmer',
         breathing && 'card-breathe',
@@ -159,6 +164,14 @@ export function AnimatedCard({
       variant={variant}
       style={glimmerStyle}
     >
+      {tone === 'sample' ? (
+        <span
+          className="absolute top-2 right-2 z-20 rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-100/90 bg-amber-950/60 border border-amber-400/25 pointer-events-none"
+          aria-hidden
+        >
+          Sample
+        </span>
+      ) : null}
       <div className="relative z-10">
         {children}
       </div>
