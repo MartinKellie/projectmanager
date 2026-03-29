@@ -3,6 +3,8 @@
  * Based on AI_Productivity_OS_Technical_Spec.md
  */
 
+import type { ScopeTaskGroupKey } from '@/lib/scope-task-grouping'
+
 /** Base for stored documents (all have id). */
 export interface DocumentData {
   id: string
@@ -88,6 +90,8 @@ export interface Action {
   completedAt: Date | string | null
   surfacedToday: boolean
   orderIndex: number
+  /** Bucket for scope-generated backlog; optional for legacy rows */
+  scopeGroup?: ScopeTaskGroupKey | null
 }
 
 export type PlanBias = 'risk-first' | 'balanced' | 'momentum-first'

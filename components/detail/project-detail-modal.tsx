@@ -1,14 +1,9 @@
 'use client'
 
 import type { Project } from '@/types/database'
-import { formatDate, formatRelativeTime } from '@/lib/utils/date'
 import { DetailModalShell } from './detail-modal-shell'
-import { DetailFieldList, DetailFieldRow } from './detail-field-list'
-import { PlaceholderDetailSection } from './placeholder-detail-section'
 import { DetailModalActions } from './detail-modal-actions'
-import { SampleDataNotice } from './sample-data-notice'
-import { isSampleProject } from '@/lib/data/is-sample-data'
-import { ProjectDetailScopeSection } from './project-detail-scope-section'
+import { ProjectDetailContent } from './project-detail-content'
 
 interface ProjectDetailModalProps {
   userId: string
@@ -53,59 +48,12 @@ export function ProjectDetailModal({
         ) : null
       }
     >
-      {isSampleProject(project) ? <SampleDataNotice /> : null}
-      <DetailFieldList>
-        <DetailFieldRow label="Client" value={project.clientName} />
-        <DetailFieldRow
-          label="Linked business"
-          value={
-            project.businessId
-              ? linkedBusinessName || `Business ID: ${project.businessId}`
-              : 'Personal / no business'
-          }
-        />
-        <DetailFieldRow
-          label="Fixed fee"
-          value={
-            project.fixedFee != null
-              ? `£${project.fixedFee.toLocaleString('en-GB')}`
-              : null
-          }
-        />
-        <DetailFieldRow
-          label="Deadline"
-          value={project.deadline ? formatDate(project.deadline) : null}
-        />
-        <DetailFieldRow
-          label="Confidence"
-          value={`${project.confidenceScore}%`}
-        />
-        <DetailFieldRow
-          label="Last touched"
-          value={formatRelativeTime(project.lastTouchedAt)}
-        />
-        <DetailFieldRow
-          label="Created"
-          value={formatDate(project.createdAt)}
-        />
-        <DetailFieldRow
-          label="Template"
-          value={
-            project.templateProjectId
-              ? `Linked · ${project.templateProjectId.slice(0, 8)}…`
-              : null
-          }
-        />
-        <DetailFieldRow label="Record ID" value={<code className="text-xs text-white/70">{project.id}</code>} />
-      </DetailFieldList>
-
-      <ProjectDetailScopeSection
+      <ProjectDetailContent
         userId={userId}
         project={project}
-        onProjectUpdated={() => onProjectUpdated?.()}
+        linkedBusinessName={linkedBusinessName}
+        onProjectUpdated={onProjectUpdated}
       />
-
-      <PlaceholderDetailSection />
     </DetailModalShell>
   )
 }

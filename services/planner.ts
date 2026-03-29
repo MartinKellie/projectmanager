@@ -11,6 +11,7 @@ import { getDocuments, timeLogsCollection, actionsCollection, where } from '@/li
 import type { Project, Action, PlanBias, TimeLog } from '@/types/database'
 import { callGemini, formatProjectSignalsForAI } from '@/lib/ai/gemini'
 import type { ActionResponse } from '@/types/actions'
+import { FOCUS_ACTIONS_MAX } from '@/lib/today-focus-partition'
 
 export interface ProjectSignal {
   project: Project
@@ -193,7 +194,7 @@ Generate 3-5 actions following these rules:
 2. Choose smallest meaningful steps
 3. Prefer momentum-restoring actions
 4. Each action should have a 1-line rationale explaining why it matters
-5. Maximum 5 actions total
+5. Maximum ${FOCUS_ACTIONS_MAX} actions total
 6. Use projectId from the map above, or null for ad-hoc actions
 
 Format as JSON (no markdown, just JSON):
@@ -248,9 +249,8 @@ Format as JSON (no markdown, just JSON):
       }
     }
 
-    // Ensure max 5 actions
-    if (result.proposedActions.length > 5) {
-      result.proposedActions = result.proposedActions.slice(0, 5)
+    if (result.proposedActions.length > FOCUS_ACTIONS_MAX) {
+      result.proposedActions = result.proposedActions.slice(0, FOCUS_ACTIONS_MAX)
     }
 
     return { success: true, data: result }

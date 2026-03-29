@@ -3,6 +3,7 @@
  * Swap adapter for Firestore later without changing UI or hook.
  */
 
+import { getTodayDateString } from '@/lib/utils/date'
 import { DEFAULT_POMODORO_CONFIG } from './constants'
 import type {
   PomodoroConfig,
@@ -15,7 +16,7 @@ const CONFIG_KEY = 'pomodoro_config'
 const ALL_TIME_KEY = 'pomodoro_all_time'
 
 function todayDateKey(): string {
-  return new Date().toISOString().slice(0, 10)
+  return getTodayDateString()
 }
 
 function statsKeyForDate(date: string): string {

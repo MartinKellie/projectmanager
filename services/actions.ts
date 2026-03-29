@@ -12,6 +12,7 @@ import {
   where,
   dateToTimestamp,
 } from '@/lib/storage/firestore'
+import { classifyScopeTask } from '@/lib/scope-task-grouping'
 import type { Action } from '@/types/database'
 import type { ActionResponse } from '@/types/actions'
 
@@ -92,21 +93,22 @@ export async function createProjectBacklogAction(
   userId: string,
   projectId: string,
   text: string,
-  orderIndex: number
+  orderIndex: number,
+  scopeGroup?: Action['scopeGroup']
 ): Promise<ActionResponse<string>> {
   try {
-    const actionId = await createDocument<Action>(
-      actionsCollection,
-      {
-        text: text.trim(),
-        projectId,
-        userId,
-        status: 'active',
-        surfacedToday: false,
-        orderIndex,
-        completedAt: null,
-      }
-    )
+    const payload: Omit<Action, 'id' | 'createdAt'> = {
+      text: text.trim(),
+      projectId,
+      userId,
+      status: 'active',
+      surfacedToday: false,
+      orderIndex,
+      completedAt: null,
+    }
+    if (scopeGroup != null) payload.scopeGroup = scopeGroup
+
+    const actionId = await createDocument<Action>(actionsCollection, payload)
     return { success: true, data: actionId }
   } catch (error) {
     return {
@@ -149,7 +151,15 @@ export async function replaceProjectBacklogActions(
 
   const trimmed = taskTexts.map((t) => t.trim()).filter(Boolean)
   for (let i = 0; i < trimmed.length; i++) {
-    const created = await createProjectBacklogAction(userId, projectId, trimmed[i], i)
+    const text = trimmed[i]
+    const scopeGroup = classifyScopeTask(text)
+    const created = await createProjectBacklogAction(
+      userId,
+      projectId,
+      text,
+      i,
+      scopeGroup
+    )
     if (!created.success) {
       return { success: false, error: created.error || 'Failed to create task' }
     }

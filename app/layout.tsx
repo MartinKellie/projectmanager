@@ -16,7 +16,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <body className="min-h-screen" suppressHydrationWarning>
+      <body
+        className="min-h-screen"
+        style={{
+          // Fallback if `/_next/static/css/*.css` fails to load (e.g. file:// or bad deploy path)
+          backgroundColor: '#0a0a0a',
+          color: '#ededed',
+        }}
+        suppressHydrationWarning
+      >
         <ErrorBoundary>
           <AuthProvider>
             <SettingsProvider>

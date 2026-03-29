@@ -32,6 +32,7 @@ export function ProjectDetailScopeSection({
     applyFileText,
     generateTasks,
     scopeTooLong,
+    loadBacklog,
     maxScopeChars,
   } = useProjectScopeSection(userId, project, onProjectUpdated)
 
@@ -127,7 +128,13 @@ export function ProjectDetailScopeSection({
         </p>
       ) : null}
 
-      <ProjectScopeBacklogList loading={loadingBacklog} items={backlog} />
+      <ProjectScopeBacklogList
+        loading={loadingBacklog}
+        items={backlog}
+        userId={userId}
+        projectId={project.id}
+        onBacklogChanged={() => void loadBacklog()}
+      />
     </section>
   )
 }

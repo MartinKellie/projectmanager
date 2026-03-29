@@ -18,22 +18,25 @@ import { isSampleProject } from '@/lib/data/is-sample-data'
 
 interface ProjectListProps {
   userId: string
+  /** When set, radar opens project in parent (dashboard overlay) instead of local detail modal. */
+  onProjectOpen?: (
+    project: Project,
+    linkedBusinessName: string | null
+  ) => void
 }
 
-export function ProjectList({ userId }: ProjectListProps) {
+export function ProjectList({ userId, onProjectOpen }: ProjectListProps) {
   const [projects, setProjects] = useState<Project[]>([])
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [detailProject, setDetailProject] = useState<Project | null>(null)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [debugStatus, setDebugStatus] = useState('idle')
   const { settings } = useSettings()
 
   const loadProjects = useCallback(async () => {
     try {
       setError(null)
-      setDebugStatus('loading')
       const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => reject(new Error('Request timed out while loading projects')), 12000)
       })
@@ -49,22 +52,18 @@ export function ProjectList({ userId }: ProjectListProps) {
       if (projectsSettled.status === 'rejected') {
         const err = projectsSettled.reason
         setError(err instanceof Error ? err.message : 'Failed to load projects')
-        setDebugStatus('error')
         return
       }
 
       const result = projectsSettled.value
       if (result.success) {
         setProjects(result.data)
-        setDebugStatus(`ok:${result.data.length}`)
         return
       }
       setError(result.error || 'Failed to load projects')
-      setDebugStatus('error')
     } catch (error) {
       console.error('Failed to load projects:', error)
       setError(error instanceof Error ? error.message : 'Failed to load projects')
-      setDebugStatus('error')
     } finally {
       setLoading(false)
     }
@@ -82,6 +81,14 @@ export function ProjectList({ userId }: ProjectListProps) {
     triggerAppToast({ message: 'Project deleted' })
     loadProjects()
     setDetailProject(null)
+  }
+
+  function openProjectCard(project: Project) {
+    if (onProjectOpen) {
+      onProjectOpen(project, getLinkedBusinessName(project))
+      return
+    }
+    setDetailProject(project)
   }
 
   useEffect(() => {
@@ -117,9 +124,6 @@ export function ProjectList({ userId }: ProjectListProps) {
       <div className="space-y-2">
         <p className="text-sm text-red-300">Could not load projects.</p>
         <p className="text-xs text-white/50">{error}</p>
-        {process.env.NODE_ENV === 'development' && (
-          <p className="text-xs text-white/40">Debug: status={debugStatus}</p>
-        )}
       </div>
     )
   }
@@ -127,9 +131,6 @@ export function ProjectList({ userId }: ProjectListProps) {
   if (projects.length === 0) {
     return (
       <div className="text-center py-8">
-        {process.env.NODE_ENV === 'development' && (
-          <p className="text-xs text-white/40 mb-3">Debug: status={debugStatus}</p>
-        )}
         <FolderKanban size={48} className="mx-auto mb-4 text-white/40" />
         <p className="text-white/60">No projects yet</p>
         <p className="text-xs text-white/40 mt-2">Use &quot;Add New&quot; to create your first project</p>
@@ -153,9 +154,9 @@ export function ProjectList({ userId }: ProjectListProps) {
               className="flex items-start gap-3 cursor-pointer rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-white/25 -m-1 p-1"
               role="button"
               tabIndex={0}
-              onClick={() => setDetailProject(project)}
+              onClick={() => openProjectCard(project)}
               onKeyDown={(e) =>
-                handleCardOpenKeyDown(e, () => setDetailProject(project))
+                handleCardOpenKeyDown(e, () => openProjectCard(project))
               }
             >
               <div className="p-2 rounded-lg bg-white/10 flex-shrink-0 icon-bounce pointer-events-none">
@@ -179,35 +180,39 @@ export function ProjectList({ userId }: ProjectListProps) {
           </AnimatedCard>
         ))}
       </div>
-      <ProjectDetailModal
-        userId={userId}
-        project={detailProject}
-        linkedBusinessName={
-          detailProject ? getLinkedBusinessName(detailProject) : null
-        }
-        isOpen={detailProject !== null}
-        onClose={() => setDetailProject(null)}
-        onEdit={() => {
-          if (!detailProject) return
-          setEditingProject(detailProject)
-          setDetailProject(null)
-        }}
-        onDelete={() => {
-          if (!detailProject) return
-          void handleDeleteProject(detailProject)
-        }}
-        onProjectUpdated={() => void loadProjects()}
-      />
-      <EditProjectModal
-        userId={userId}
-        project={editingProject}
-        isOpen={editingProject !== null}
-        onClose={() => setEditingProject(null)}
-        onSaved={() => {
-          triggerAppToast({ message: 'Project updated' })
-          loadProjects()
-        }}
-      />
+      {!onProjectOpen ? (
+        <ProjectDetailModal
+          userId={userId}
+          project={detailProject}
+          linkedBusinessName={
+            detailProject ? getLinkedBusinessName(detailProject) : null
+          }
+          isOpen={detailProject !== null}
+          onClose={() => setDetailProject(null)}
+          onEdit={() => {
+            if (!detailProject) return
+            setEditingProject(detailProject)
+            setDetailProject(null)
+          }}
+          onDelete={() => {
+            if (!detailProject) return
+            void handleDeleteProject(detailProject)
+          }}
+          onProjectUpdated={() => void loadProjects()}
+        />
+      ) : null}
+      {!onProjectOpen ? (
+        <EditProjectModal
+          userId={userId}
+          project={editingProject}
+          isOpen={editingProject !== null}
+          onClose={() => setEditingProject(null)}
+          onSaved={() => {
+            triggerAppToast({ message: 'Project updated' })
+            loadProjects()
+          }}
+        />
+      ) : null}
     </>
   )
 }

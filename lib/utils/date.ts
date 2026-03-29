@@ -3,11 +3,23 @@
  */
 
 /**
- * Get today's date as YYYY-MM-DD string (for dailyIntent id)
+ * Format a Date as YYYY-MM-DD in the **local** calendar (not UTC).
+ * `toISOString().slice(0, 10)` is wrong for daily boundaries — e.g. UK morning
+ * can still be "yesterday" in UTC, so intent/plan doc IDs would not roll over
+ * when the user's local day changes.
+ */
+export function formatLocalDateString(date: Date): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+/**
+ * Get today's date as YYYY-MM-DD string (for dailyIntent / dailyPlan document ids)
  */
 export function getTodayDateString(): string {
-  const today = new Date()
-  return today.toISOString().split('T')[0]
+  return formatLocalDateString(new Date())
 }
 
 /**

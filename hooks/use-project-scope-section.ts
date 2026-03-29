@@ -8,6 +8,7 @@ import {
 } from '@/services/actions'
 import { generateTasksFromScope } from '@/services/scope-task-generator'
 import type { Project } from '@/types/database'
+import type { ScopeTaskGroupKey } from '@/lib/scope-task-grouping'
 import { MAX_SCOPE_CHARS } from '@/lib/constants/scope-limits'
 
 export function useProjectScopeSection(
@@ -17,7 +18,12 @@ export function useProjectScopeSection(
 ) {
   const [scopeDraft, setScopeDraft] = useState(project.scopeMarkdown || '')
   const [backlog, setBacklog] = useState<
-    { id: string; text: string; orderIndex: number }[]
+    {
+      id: string
+      text: string
+      orderIndex: number
+      scopeGroup?: ScopeTaskGroupKey | null
+    }[]
   >([])
   const [loadingBacklog, setLoadingBacklog] = useState(true)
   const [savingScope, setSavingScope] = useState(false)
@@ -35,6 +41,7 @@ export function useProjectScopeSection(
           id: a.id,
           text: a.text,
           orderIndex: a.orderIndex,
+          scopeGroup: a.scopeGroup,
         }))
       )
     }

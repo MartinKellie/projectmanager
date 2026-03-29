@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { AppLayout } from '@/components/layout/app-layout'
 import { GlassPanel } from '@/components/layout/glass-panel'
 import { DummyDataInitializer } from '@/components/onboarding/dummy-data-initializer'
@@ -11,12 +11,31 @@ import { useSettings } from '@/contexts/settings-context'
 import { PomodoroPanel } from '@/components/pomodoro/pomodoro-panel'
 import { MusicPanel } from '@/components/music-player/music-panel'
 import { AbacusMiniBrowser } from '@/components/embedded-chat/abacus-mini-browser'
-import { APP_TOAST_EVENT, type AppToastDetail } from '@/lib/events/toast'
+import { APP_TOAST_EVENT, type AppToastDetail, triggerAppToast } from '@/lib/events/toast'
+import { triggerAppDataRefresh } from '@/lib/events/data-refresh'
+import { ProjectFocusOverlay } from '@/components/project/project-focus-overlay'
+import { ProjectInlineBacklog } from '@/components/project/project-inline-backlog'
+import { EditProjectModal } from '@/components/edit-forms/edit-project-modal'
+import { promptAndDeleteProject } from '@/components/projects/project-prompt-actions'
+import { getProject } from '@/services/projects'
+import type { Project } from '@/types/database'
 
 export default function HomePage() {
   const { user, loading, error } = useAuthContext()
   const { settings } = useSettings()
   const [toastMessage, setToastMessage] = useState('')
+  const [focusProject, setFocusProject] = useState<Project | null>(null)
+  const [focusMode, setFocusMode] = useState<'none' | 'modal' | 'inline'>('none')
+  const [focusLinkedBusiness, setFocusLinkedBusiness] = useState<string | null>(null)
+  const [editingProject, setEditingProject] = useState<Project | null>(null)
+
+  const handleFocusProjectUpdated = useCallback(async () => {
+    triggerAppDataRefresh()
+    if (focusProject) {
+      const r = await getProject(focusProject.id)
+      if (r.success) setFocusProject(r.data)
+    }
+  }, [focusProject])
 
   useEffect(() => {
     function handleToast(event: Event) {
@@ -52,9 +71,55 @@ export default function HomePage() {
           </div>
         }
         middleColumn={
-          <div className="flex flex-col h-full">
-            <div className="flex-1 min-h-0 overflow-y-auto">
-              <TodayFocus />
+          <div className="flex h-full min-h-0 flex-col">
+            <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+              {focusMode === 'inline' && focusProject ? (
+                <>
+                  <TodayFocus
+                    collapsed
+                    onRestoreCollapsed={() => {
+                      setFocusMode('none')
+                      setFocusProject(null)
+                    }}
+                    collapsedSubtitle={`Viewing ${focusProject.name} — backlog below`}
+                  />
+                  <ProjectInlineBacklog
+                    key={focusProject.id}
+                    userId={user?.uid ?? ''}
+                    projectId={focusProject.id}
+                    projectName={focusProject.name}
+                  />
+                </>
+              ) : (
+                <>
+                  <div className="relative min-h-0 flex-1 overflow-y-auto">
+                    <TodayFocus />
+                  </div>
+                  {user && focusMode === 'modal' && focusProject ? (
+                    <ProjectFocusOverlay
+                      userId={user.uid}
+                      project={focusProject}
+                      linkedBusinessName={focusLinkedBusiness}
+                      onClose={() => {
+                        setFocusMode('none')
+                        setFocusProject(null)
+                      }}
+                      onOpenInline={() => setFocusMode('inline')}
+                      onEdit={() => setEditingProject(focusProject)}
+                      onDelete={async () => {
+                        const ok = await promptAndDeleteProject(focusProject)
+                        if (ok) {
+                          triggerAppToast({ message: 'Project deleted' })
+                          setFocusMode('none')
+                          setFocusProject(null)
+                          triggerAppDataRefresh()
+                        }
+                      }}
+                      onProjectUpdated={handleFocusProjectUpdated}
+                    />
+                  ) : null}
+                </>
+              )}
             </div>
             <AbacusMiniBrowser />
           </div>
@@ -64,7 +129,14 @@ export default function HomePage() {
             <GlassPanel>
               <h2 className="text-lg font-semibold mb-4">Project Radar</h2>
               {user ? (
-                <ProjectList userId={user.uid} />
+                <ProjectList
+                  userId={user.uid}
+                  onProjectOpen={(project, linkedName) => {
+                    setFocusProject(project)
+                    setFocusLinkedBusiness(linkedName)
+                    setFocusMode('modal')
+                  }}
+                />
               ) : loading ? (
                 <p className="text-sm text-white/60">Loading...</p>
               ) : error ? (
@@ -79,6 +151,24 @@ export default function HomePage() {
           </div>
         }
       />
+      {user ? (
+        <EditProjectModal
+          userId={user.uid}
+          project={editingProject}
+          isOpen={editingProject !== null}
+          onClose={() => setEditingProject(null)}
+          onSaved={() => {
+            triggerAppToast({ message: 'Project updated' })
+            setEditingProject(null)
+            triggerAppDataRefresh()
+            if (focusProject) {
+              void getProject(focusProject.id).then((r) => {
+                if (r.success) setFocusProject(r.data)
+              })
+            }
+          }}
+        />
+      ) : null}
     </>
   )
 }

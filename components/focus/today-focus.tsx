@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { GlassPanel } from '@/components/layout/glass-panel'
 import { AnimatedCard } from '@/components/ui/animated-card'
 import { Button } from '@/components/ui/button'
@@ -11,11 +11,23 @@ import { getTodayActions, createAction, completeAction } from '@/services/action
 import { generateDailyPlan } from '@/services/planner'
 import { useAuthContext } from '@/contexts/auth-context'
 import type { DailyIntent, DailyPlan, Action, PlanBias } from '@/types/database'
-// Removed unused imports
-import { Sparkles, CheckCircle2, Circle, Target, MessageSquare, Trophy } from 'lucide-react'
+import { Sparkles, Target, MessageSquare, Trophy } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
+import { partitionTodayFocusActions } from '@/lib/today-focus-partition'
+import { TodayFocusActionsSection } from '@/components/focus/today-focus-actions-section'
 
-export function TodayFocus() {
+interface TodayFocusProps {
+  /** Compact strip instead of full focus (e.g. project open in Today’s Action area). */
+  collapsed?: boolean
+  onRestoreCollapsed?: () => void
+  collapsedSubtitle?: string
+}
+
+export function TodayFocus({
+  collapsed,
+  onRestoreCollapsed,
+  collapsedSubtitle,
+}: TodayFocusProps) {
   const { user, loading: authLoading, error: authError } = useAuthContext()
   const [intent, setIntent] = useState<DailyIntent | null>(null)
   const [plan, setPlan] = useState<DailyPlan | null>(null)
@@ -26,12 +38,11 @@ export function TodayFocus() {
   const [conversationInput, setConversationInput] = useState('')
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
-  const [debugState, setDebugState] = useState({
-    step: 'idle',
-    intent: 'idle',
-    plan: 'idle',
-    actions: 'idle',
-  })
+
+  const { focus: focusActions, queued: queuedActions } = useMemo(
+    () => partitionTodayFocusActions(actions),
+    [actions]
+  )
 
   const loadData = useCallback(async () => {
     if (!user) return
@@ -39,12 +50,6 @@ export function TodayFocus() {
     setLoading(true)
     try {
       setLoadError(null)
-      setDebugState({
-        step: 'loading',
-        intent: 'loading',
-        plan: 'loading',
-        actions: 'loading',
-      })
       const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => reject(new Error('Request timed out while loading today data')), 12000)
       })
@@ -59,34 +64,27 @@ export function TodayFocus() {
 
       if (intentResult.success) {
         setIntent(intentResult.data)
-        setDebugState((prev) => ({ ...prev, intent: intentResult.data ? 'ok-has-data' : 'ok-empty' }))
-        // Show startup modal if no intent for today
+        // Local calendar day: show modal only when there is no doc for today
         if (!intentResult.data) setShowStartupModal(true)
+        else setShowStartupModal(false)
       } else {
         setLoadError(intentResult.error || 'Failed to load daily intent')
-        setDebugState((prev) => ({ ...prev, intent: 'error' }))
       }
 
       if (planResult.success) {
         setPlan(planResult.data)
-        setDebugState((prev) => ({ ...prev, plan: planResult.data ? 'ok-has-data' : 'ok-empty' }))
       } else {
         setLoadError((prev) => prev || planResult.error || 'Failed to load daily plan')
-        setDebugState((prev) => ({ ...prev, plan: 'error' }))
       }
 
       if (actionsResult.success) {
         setActions(actionsResult.data)
-        setDebugState((prev) => ({ ...prev, actions: 'ok' }))
       } else {
         setLoadError((prev) => prev || actionsResult.error || 'Failed to load actions')
-        setDebugState((prev) => ({ ...prev, actions: 'error' }))
       }
-      setDebugState((prev) => ({ ...prev, step: 'loaded' }))
     } catch (error) {
       console.error('Failed to load focus data:', error)
       setLoadError(error instanceof Error ? error.message : 'Failed to load focus data')
-      setDebugState((prev) => ({ ...prev, step: 'error' }))
     } finally {
       setLoading(false)
     }
@@ -236,11 +234,6 @@ export function TodayFocus() {
           ) : (
             <p className="text-sm text-white/60">Signing you in…</p>
           )}
-          {process.env.NODE_ENV === 'development' && (
-            <p className="text-xs text-white/50 mt-2">
-              Debug: authLoading={String(authLoading)} user={String(Boolean(user))}
-            </p>
-          )}
         </GlassPanel>
       </div>
     )
@@ -260,22 +253,22 @@ export function TodayFocus() {
     )
   }
 
+  if (collapsed && onRestoreCollapsed) {
+    return (
+      <div className="flex items-center justify-between gap-3 border-b border-white/10 bg-black/20 px-4 py-2">
+        <p className="min-w-0 truncate text-xs text-white/60">
+          {collapsedSubtitle ??
+            "Today's focus is hidden while you view a project."}
+        </p>
+        <Button type="button" size="sm" variant="outline" onClick={onRestoreCollapsed}>
+          Back to Today
+        </Button>
+      </div>
+    )
+  }
+
   return (
     <div className="p-4 space-y-4">
-      {process.env.NODE_ENV === 'development' && (
-        <GlassPanel className="p-3">
-          <p className="text-xs text-white/70">
-            Debug: authLoading={String(authLoading)} user={String(Boolean(user))} loading={String(loading)} step={debugState.step}
-          </p>
-          <p className="text-xs text-white/50 mt-1">
-            dailyIntent={debugState.intent} dailyPlan={debugState.plan} todayActions={debugState.actions}
-          </p>
-          {loadError && (
-            <p className="text-xs text-red-300 mt-1">error={loadError}</p>
-          )}
-        </GlassPanel>
-      )}
-
       <DailyStartupModal
         isOpen={showStartupModal}
         userId={user?.uid || ''}
@@ -369,36 +362,12 @@ export function TodayFocus() {
         </AnimatedCard>
       )}
 
-      {/* Today's Actions */}
-      <AnimatedCard index={3}>
-        <h3 className="font-semibold mb-3">Today&apos;s Actions ({actions.length}/5)</h3>
-        {actions.length === 0 ? (
-          <p className="text-sm text-white/60">No actions yet. Click &quot;Plan My Day&quot; to get started.</p>
-        ) : (
-          <div className="space-y-2">
-            {actions.map((action, index) => (
-              <div
-                key={action.id}
-                className="flex items-start gap-3 p-3 rounded-lg glass hover:glass-strong transition-all cursor-pointer"
-                onClick={() => handleCompleteAction(action.id, action.projectId)}
-              >
-                <button className="mt-0.5">
-                  {action.status === 'completed' ? (
-                    <CheckCircle2 size={20} className="text-green-400" />
-                  ) : (
-                    <Circle size={20} className="text-white/40 hover:text-white/60" />
-                  )}
-                </button>
-                <div className="flex-1">
-                  <p className={cn('text-sm', action.status === 'completed' && 'line-through text-white/40')}>
-                    {action.text}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </AnimatedCard>
+      <TodayFocusActionsSection
+        focusActions={focusActions}
+        queuedActions={queuedActions}
+        hasAnyToday={actions.length > 0}
+        onComplete={handleCompleteAction}
+      />
 
       {/* Conversational Refinement */}
       {plan && conversationMessages.length > 0 && (
