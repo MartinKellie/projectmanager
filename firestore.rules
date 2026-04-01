@@ -68,6 +68,13 @@ service cloud.firestore {
       allow delete: if isSharedOwner(resource.data)
     }
 
+    match /dailyPlanRecord/{docId} {
+      allow read: if signedIn()
+      allow create: if isSharedOwner(request.resource.data)
+      allow update: if isSharedOwner(resource.data) && isSharedOwner(request.resource.data)
+      allow delete: if isSharedOwner(resource.data)
+    }
+
     match /aiEvents/{docId} {
       allow read: if signedIn()
       allow create: if isSharedOwner(request.resource.data)

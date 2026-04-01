@@ -1,6 +1,6 @@
 /**
  * Firestore data model types
- * Based on AI_Productivity_OS_Technical_Spec.md
+ * Based on AI_Focus_Hub_Technical_Spec.md
  */
 
 import type { ScopeTaskGroupKey } from '@/lib/scope-task-grouping'
@@ -92,6 +92,15 @@ export interface Action {
   orderIndex: number
   /** Bucket for scope-generated backlog; optional for legacy rows */
   scopeGroup?: ScopeTaskGroupKey | null
+  /** Scope sync lifecycle for project backlog items. */
+  scopeLifecycle?: 'active' | 'detached'
+  /** Stable, normalised key used for scope/backlog merge matching. */
+  scopeMatchKey?: string | null
+  detachedAt?: Date | string | null
+  /** Carryover tracking for ignored surfaced-today actions. */
+  carryoverCount?: number
+  lastCarryoverDate?: string | null
+  suppressedAt?: Date | string | null
 }
 
 export type PlanBias = 'risk-first' | 'balanced' | 'momentum-first'
@@ -113,6 +122,18 @@ export interface DailyPlan {
   anchorProjectId: string | null
   proposedActionIds: string[] // Array of action IDs
   finalActionIds: string[] // User-approved action IDs
+  createdAt: Date | string
+  updatedAt: Date | string
+}
+
+export interface DailyPlanRecord {
+  id: string // date-based (e.g., "2026-02-21")
+  userId: string
+  intent: string | null
+  plannerContext: string | null
+  focusActionIds: string[] // Ordered, typically max 5
+  queuedActionIds: string[] // Ordered tail after focus
+  addedTodayActionIds?: string[] // Optional user-added list for the day
   createdAt: Date | string
   updatedAt: Date | string
 }

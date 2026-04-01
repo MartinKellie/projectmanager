@@ -1,4 +1,4 @@
-AI Productivity OS
+AI Focus Hub
 
 Today’s Focus – AI-Assisted Planning System
 

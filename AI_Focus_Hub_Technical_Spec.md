@@ -10,7 +10,7 @@ You can copy this directly into `AI\_Productivity\_OS\_Technical\_Spec.md`.
 
 
 
-\# AI Productivity OS
+\# AI Focus Hub
 
 
 

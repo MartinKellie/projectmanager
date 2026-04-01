@@ -30,6 +30,8 @@ export function ProjectInlineBacklog({
         result.data.map((a) => ({
           id: a.id,
           text: a.text,
+          status: a.status,
+          scopeLifecycle: a.scopeLifecycle,
           orderIndex: a.orderIndex,
           scopeGroup: a.scopeGroup,
         }))

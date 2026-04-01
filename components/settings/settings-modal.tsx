@@ -101,6 +101,29 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             </label>
           </div>
 
+          <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1">
+                <h3 className="font-medium mb-1">Carryover suppression threshold</h3>
+                <p className="text-sm text-white/60">
+                  Suppress a repeatedly ignored task after this many days
+                </p>
+              </div>
+              <span className="text-sm text-white/70">{settings.carryoverSuppressAfter} days</span>
+            </div>
+            <input
+              type="range"
+              min={2}
+              max={10}
+              step={1}
+              value={settings.carryoverSuppressAfter}
+              onChange={(e) =>
+                updateSetting('carryoverSuppressAfter', Number(e.target.value))
+              }
+              className="mt-3 w-full accent-indigo-400"
+            />
+          </div>
+
           <PomodoroSettings />
         </div>
       </GlassPanel>

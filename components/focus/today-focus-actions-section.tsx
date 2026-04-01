@@ -13,6 +13,10 @@ interface TodayFocusActionsSectionProps {
   queuedActions: Action[]
   hasAnyToday: boolean
   onComplete: (actionId: string, projectId: string | null) => void
+  onMoveUp: (actionId: string, list: 'focus' | 'queue') => void
+  onMoveDown: (actionId: string, list: 'focus' | 'queue') => void
+  onMoveAcross: (actionId: string, from: 'focus' | 'queue') => void
+  onReorderDrop: (sourceActionId: string, targetActionId: string, list: 'focus' | 'queue') => void
 }
 
 export function TodayFocusActionsSection({
@@ -20,6 +24,10 @@ export function TodayFocusActionsSection({
   queuedActions,
   hasAnyToday,
   onComplete,
+  onMoveUp,
+  onMoveDown,
+  onMoveAcross,
+  onReorderDrop,
 }: TodayFocusActionsSectionProps) {
   const [queueOpen, setQueueOpen] = useState(false)
 
@@ -41,6 +49,10 @@ export function TodayFocusActionsSection({
             actions={focusActions}
             onComplete={onComplete}
             variant="focus"
+            onMoveUp={(actionId) => onMoveUp(actionId, 'focus')}
+            onMoveDown={(actionId) => onMoveDown(actionId, 'focus')}
+            onMoveAcross={onMoveAcross}
+            onReorderDrop={onReorderDrop}
           />
           {queuedActions.length > 0 ? (
             <div className="mt-4 border-t border-white/10 pt-3">
@@ -71,6 +83,10 @@ export function TodayFocusActionsSection({
                     actions={queuedActions}
                     onComplete={onComplete}
                     variant="queued"
+                    onMoveUp={(actionId) => onMoveUp(actionId, 'queue')}
+                    onMoveDown={(actionId) => onMoveDown(actionId, 'queue')}
+                    onMoveAcross={onMoveAcross}
+                    onReorderDrop={onReorderDrop}
                   />
                 </>
               ) : (

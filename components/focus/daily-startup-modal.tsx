@@ -31,23 +31,27 @@ export function DailyStartupModal({ isOpen, userId, onComplete }: DailyStartupMo
     }
   }, [isOpen])
 
-  const handleSkip = async () => {
-    setLoading(true)
-    await createOrUpdateDailyIntent(userId, {
-      skipped: true,
-      planBias: 'balanced',
-    })
-    setLoading(false)
-    onComplete()
-  }
-
   const handleIntentSubmit = async () => {
-    if (!intentText.trim()) {
-      handleSkip()
-      return
-    }
+    if (!intentText.trim()) return
 
     setStep('bias')
+  }
+
+  const handleSkip = async () => {
+    setLoading(true)
+    try {
+      const result = await createOrUpdateDailyIntent(userId, {
+        skipped: true,
+        planBias: 'balanced',
+      })
+      if (!result.success) {
+        console.error('Failed to skip intent:', result.error)
+        return
+      }
+      onComplete()
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleBiasSubmit = async () => {
@@ -106,11 +110,16 @@ export function DailyStartupModal({ isOpen, userId, onComplete }: DailyStartupMo
                 onClick={handleIntentSubmit}
                 variant="default"
                 className="flex-1"
-                disabled={loading}
+                disabled={loading || !intentText.trim()}
               >
                 Continue
               </Button>
             </div>
+            {!intentText.trim() ? (
+              <p className="text-xs text-amber-200">
+                Add what you want to make progress on before continuing.
+              </p>
+            ) : null}
           </div>
         )}
 

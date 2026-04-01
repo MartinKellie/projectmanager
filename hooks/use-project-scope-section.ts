@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import { updateProject } from '@/services/projects'
 import {
+  fullResetProjectBacklogActions,
   getProjectBacklogActions,
-  replaceProjectBacklogActions,
+  mergeProjectBacklogActions,
 } from '@/services/actions'
 import { generateTasksFromScope } from '@/services/scope-task-generator'
 import type { Project } from '@/types/database'
@@ -21,6 +22,8 @@ export function useProjectScopeSection(
     {
       id: string
       text: string
+      status: 'active' | 'completed'
+      scopeLifecycle?: 'active' | 'detached'
       orderIndex: number
       scopeGroup?: ScopeTaskGroupKey | null
     }[]
@@ -40,6 +43,8 @@ export function useProjectScopeSection(
         result.data.map((a) => ({
           id: a.id,
           text: a.text,
+          status: a.status,
+          scopeLifecycle: a.scopeLifecycle,
           orderIndex: a.orderIndex,
           scopeGroup: a.scopeGroup,
         }))
@@ -89,16 +94,49 @@ export function useProjectScopeSection(
       return
     }
 
-    const existing = await getProjectBacklogActions(userId, project.id)
-    if (
-      existing.success &&
-      existing.data.length > 0 &&
-      !window.confirm(
-        'Replace existing backlog tasks with a new list generated from scope? This cannot be undone.'
-      )
-    ) {
+    setGenerating(true)
+    setError(null)
+    setGenSource(null)
+
+    const gen = await generateTasksFromScope(scope, project.name)
+    if (!gen.success) {
+      setGenerating(false)
+      setError(gen.error || 'Failed to generate tasks')
       return
     }
+    if (!gen.data) {
+      setGenerating(false)
+      setError('Failed to generate tasks')
+      return
+    }
+
+    const replace = await mergeProjectBacklogActions(
+      userId,
+      project.id,
+      gen.data.tasks
+    )
+    setGenerating(false)
+
+    if (!replace.success) {
+      setError(replace.error || 'Failed to save tasks')
+      return
+    }
+
+    setGenSource(gen.data.source)
+    await loadBacklog()
+    onProjectUpdated()
+  }
+
+  async function generateTasksWithFullReset() {
+    const scope = scopeDraft.trim() || (project.scopeMarkdown || '').trim()
+    if (!scope) {
+      setError('Paste or import scope, then save — or generate using saved scope.')
+      return
+    }
+    const confirmed = window.confirm(
+      'Full reset will remove existing backlog tasks for this project (except surfaced today actions) and rebuild from scope. Continue?'
+    )
+    if (!confirmed) return
 
     setGenerating(true)
     setError(null)
@@ -116,15 +154,15 @@ export function useProjectScopeSection(
       return
     }
 
-    const replace = await replaceProjectBacklogActions(
+    const reset = await fullResetProjectBacklogActions(
       userId,
       project.id,
       gen.data.tasks
     )
     setGenerating(false)
 
-    if (!replace.success) {
-      setError(replace.error || 'Failed to save tasks')
+    if (!reset.success) {
+      setError(reset.error || 'Failed to reset tasks')
       return
     }
 
@@ -148,6 +186,7 @@ export function useProjectScopeSection(
     saveScope,
     applyFileText,
     generateTasks,
+    generateTasksWithFullReset,
     scopeTooLong,
     loadBacklog,
     maxScopeChars: MAX_SCOPE_CHARS,

@@ -1,6 +1,8 @@
 export interface ScopeBacklogItem {
   id: string
   text: string
+  status?: 'active' | 'completed'
+  scopeLifecycle?: 'active' | 'detached'
   orderIndex?: number
   /** When set (from Firestore), takes precedence over classifyScopeTask(text). */
   scopeGroup?: ScopeTaskGroupKey | null

@@ -60,7 +60,7 @@ export function TopNav({ currentView, onViewChange }: TopNavProps) {
     <>
       <nav className="h-14 border-b border-white/10 glass flex items-center justify-between px-4 z-20 relative">
         <div className="flex items-center gap-6">
-          <h1 className="text-lg font-semibold">AI Productivity OS</h1>
+          <h1 className="text-lg font-semibold">AI Focus Hub</h1>
           
           <div className="flex items-center gap-1">
             <Button

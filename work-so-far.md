@@ -1,6 +1,6 @@
-# AI Productivity OS — Work so far (scope snapshot)
+# AI Focus Hub — Work so far (scope snapshot)
 
-**Document purpose:** A working snapshot for revising overall product scope offline. It is not the canonical technical spec; see `README.md`, `AI_Productivity_OS_Technical_Spec.md`, and `AI_Productivity_OS_Todays_Focus_Planner.md` for source material.
+**Document purpose:** A working snapshot for revising overall product scope offline. It is not the canonical technical spec; see `README.md`, `AI_Focus_Hub_Technical_Spec.md`, and `AI_Focus_Hub_Todays_Focus_Planner.md` for source material.
 
 **Snapshot date:** 29 March 2026  
 **App version:** 0.2.1 (from `package.json`)
@@ -22,7 +22,7 @@ Per-project delivery scope (e.g. “Bookmarks” technical work) lives in **Fire
 
 ## 2. Product intent (from specs)
 
-The following is a condensed synthesis of `AI_Productivity_OS_Technical_Spec.md`, `AI_Productivity_OS_Todays_Focus_Planner.md`, and `README.md`.
+The following is a condensed synthesis of `AI_Focus_Hub_Technical_Spec.md`, `AI_Focus_Hub_Todays_Focus_Planner.md`, and `README.md`.
 
 ### 2.1 Positioning
 
@@ -45,7 +45,7 @@ The following is a condensed synthesis of `AI_Productivity_OS_Technical_Spec.md`
 - **Daily intent** and **daily plan** documents keyed by calendar day / user.
 - **Time logs**, **contacts**, **businesses**—supported in the model and navigation; depth of UI varies.
 
-### 2.4 Today’s Focus / planner principles (`AI_Productivity_OS_Todays_Focus_Planner.md`)
+### 2.4 Today’s Focus / planner principles (`AI_Focus_Hub_Todays_Focus_Planner.md`)
 
 - Turn project reality into a **small executable daily plan** (historically **3–5** actions from the planner).
 - Balance risk, momentum, and **user-stated intent** at startup.
@@ -134,7 +134,7 @@ Use this when you update documentation or a formal `scope.md`.
 Short prompts—not decisions:
 
 1. **Backlog UX after completion:** Should **completed scope sections** remain visible as checked (audit trail), or is **removal from backlog** always correct?
-2. **Queue vs data model:** Is “queued for today” **purely a UI partition**, or should the datastore **enforce** at most five `surfacedToday` rows?
+2. **Queue vs data model:** Queue ordering is now persisted via `DailyPlanRecord`; decide whether to hard-enforce queue-only visibility rules server-side or keep this as a UI-first contract.
 3. **Time and confidence:** How much of **time logging** and **confidence history** belongs in the next milestone?
 4. **AI surface:** Gemini for planning and scope generation is present; where should **Cloud Functions** and **stored AI events** land relative to static hosting?
 5. **Multi-device:** Shared uid mapping implies careful **rules**; is multi-device sync an explicit goal for the next scope?

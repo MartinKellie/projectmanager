@@ -31,6 +31,7 @@ export function ProjectDetailScopeSection({
     saveScope,
     applyFileText,
     generateTasks,
+    generateTasksWithFullReset,
     scopeTooLong,
     loadBacklog,
     maxScopeChars,
@@ -117,6 +118,15 @@ export function ProjectDetailScopeSection({
           ) : (
             'Generate tasks from scope'
           )}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={generating || scopeTooLong}
+          onClick={() => void generateTasksWithFullReset()}
+        >
+          Full reset from scope
         </Button>
       </div>
 

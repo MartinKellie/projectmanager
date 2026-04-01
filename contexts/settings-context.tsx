@@ -1,11 +1,12 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 
 interface Settings {
   glimmerEnabled: boolean
   glimmerRandomColor: boolean
   toastsEnabled: boolean
+  carryoverSuppressAfter: number
 }
 
 interface SettingsContextValue {
@@ -19,6 +20,7 @@ const DEFAULT_SETTINGS: Settings = {
   glimmerEnabled: true,
   glimmerRandomColor: false,
   toastsEnabled: true,
+  carryoverSuppressAfter: 4,
 }
 
 const SETTINGS_STORAGE_KEY = 'app_settings'
@@ -49,18 +51,27 @@ function saveSettings(settings: Settings) {
 }
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
-  const [settings, setSettings] = useState<Settings>(loadSettings)
+  const [settings, setSettings] = useState<Settings>(() => loadSettings())
+
+  const updateSetting = useCallback(
+    <K extends keyof Settings>(key: K, value: Settings[K]) => {
+      setSettings((prev) => {
+        const next = { ...prev, [key]: value }
+        saveSettings(next)
+        return next
+      })
+    },
+    []
+  )
 
   useEffect(() => {
-    // Load settings on mount
-    setSettings(loadSettings())
+    function onStorage(event: StorageEvent) {
+      if (event.key !== SETTINGS_STORAGE_KEY) return
+      setSettings(loadSettings())
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
   }, [])
-
-  const updateSetting = <K extends keyof Settings>(key: K, value: Settings[K]) => {
-    const newSettings = { ...settings, [key]: value }
-    setSettings(newSettings)
-    saveSettings(newSettings)
-  }
 
   return (
     <SettingsContext.Provider value={{ settings, updateSetting }}>

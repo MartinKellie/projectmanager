@@ -12,6 +12,7 @@ import {
 import { getTodayDateString } from '@/lib/utils/date'
 import type { DailyPlan, PlanBias } from '@/types/database'
 import type { ActionResponse } from '@/types/actions'
+import { syncTodayPlanRecordFromActions } from './daily-plan-record'
 
 export async function getTodayPlan(userId: string): Promise<ActionResponse<DailyPlan | null>> {
   try {
@@ -62,6 +63,11 @@ export async function createOrUpdateDailyPlan(
       )
     }
     
+    const syncResult = await syncTodayPlanRecordFromActions(userId)
+    if (!syncResult.success) {
+      console.warn('Failed to sync daily plan record after saving daily plan:', syncResult.error)
+    }
+
     return { success: true, data: docId }
   } catch (error) {
     return {

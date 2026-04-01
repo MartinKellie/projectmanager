@@ -5,7 +5,7 @@ import { ErrorBoundary } from '@/components/error-boundary'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'AI Productivity OS',
+  title: 'AI Focus Hub',
   description: 'Personal operating system for managing outcome-based projects',
 }
 

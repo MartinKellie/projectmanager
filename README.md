@@ -1,4 +1,4 @@
-# AI Productivity OS
+# AI Focus Hub
 
 A personal operating system for managing outcome-based projects, tracking time intentionally, and receiving AI-assisted insights without surrendering authority to automation.
 
@@ -78,7 +78,7 @@ Cursor may also use its own internal preview port(s), which are not guaranteed t
 │   ├── storage/          # Local storage layer (Firebase-ready API)
 │   └── utils/            # Helper functions
 ├── types/                # TypeScript type definitions
-└── AI_Productivity_OS_Technical_Spec.md  # Full specification
+└── AI_Focus_Hub_Technical_Spec.md  # Full specification
 ```
 
 ## Architecture
